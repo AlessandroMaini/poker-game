@@ -1,6 +1,7 @@
 # poker-game
-### <a name="link">Links utili</a>
+### <a name="link">Info utili</a>
 * [texas hold'em](https://it.wikipedia.org/wiki/Texas_hold_%27em)
+* Per salvare le tue modifiche alla repository da IntelliJ vai in **Git**, poi **Branches** o **New Branch**, dai il nome alla branch (e.g. guido), in seguito fai la **Push** o la **Commit** (pulsanti in alto a destra) sulla nuova branch
 ## Accesso al gioco
 L'applicazione mostra una schermata iniziale di accesso nella quale chiede all'utente di inserire il proprio **username**.
 
