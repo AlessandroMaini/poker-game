@@ -51,3 +51,20 @@ tabella del database con il nuovo conto dell'utente.
 
 A questo punto l'utente potrà decidere se rientrare in gioco oppure **uscire dal gioco**, così facendo si tornerà alla schermata di login, dove si potrà rientrare con un username oopure chiudere l'app.
 
+## Piccolo brainstorming
+* La gestione del **database** credo che sarà fatta tramite JDBC e SQLite, devo ancora vedere bene come fare...
+* Alcune delle classi essenziali saranno:
+  * **Carta** (con valore e seme)
+  * **Mazzo** (con le 52 carte e il metodo mescola, pesca)
+  * **Mano**: io la considererei come sia le 2 carte che si hanno in mano, che le **community cards**, dovrebbe avere un metodo che calcola la mano migliore possibile date le carte a disposizione finora
+(sarà utile soprattutto per programmare i bot)
+  * **Hand** (perchè non mi vengono altri nomi): questa è la classe con un array di 5 carte come attributo e con un metodo che restituisce il valore della mano, quest'ultimo deve essere molto preciso per evitare problemi quando bisogna calcolare un vincitore, quindi terrà in considerazione sia le carte che partecipano al punteggio (e.g. in un tris le 3 carte con lo stesso valore), sia quello che non lo fanno (e.g. in un tris le 2 carte con valori diversi), sia le 2 carte che il giocatore ha in mano (quest'ultime necessarie in caso di pareggi)
+  * **Pot**: tiene conto delle puntate ed eventuali [**side pot**](#link)
+  * **Giocatore** (che ha un **username** e **conto**, anche per i bot)
+* La parte grafica sarà principalmente costituita da bottoni e panel, eventualmente si può mettere nella schermata di login e quella iniziale una tabella con tutti i dati del **database** sui vari giocatori a mo di classfica
+
+Direi che questo è quanto Guido, aiuto il tempo è pochissimo e devo ancora iniziare [mannaggina](https://cpad.ask.fm/251/623/336/910003011-1qesacg-cl8jblr7cfbpr2f/original/tumblr_mkxmzykB2l1rdln34o1_500.jpg)
+
+Appena puoi scrivimi dicendo innanzitutto se la repository ti funziona, poi se c'è qualcosa che vuoi cambiare del progetto e infine quali parti preferisci fare (io farei la parte di interfacciamento con il **database**, poi vorrei anche fare lo script per i bot, comunque fammi sapere...)
+
+CIAO!   :)
