@@ -52,7 +52,7 @@ tabella del database con il nuovo conto dell'utente.
 A questo punto l'utente potrà decidere se rientrare in gioco oppure **uscire dal gioco**, così facendo si tornerà alla schermata di login, dove si potrà rientrare con un username oopure chiudere l'app.
 
 ## Piccolo brainstorming
-* La gestione del **database** credo che sarà fatta tramite JDBC e SQLite, devo ancora vedere bene come fare...
+* La gestione del **database** -*credo che sarà fatta tramite JDBC e SQLite, devo ancora vedere bene come fare...*- **UPDATE**: come non detto, si fa tutto con JSON e Jackson, è più semplice, più veloce e più sicuro!
 * Alcune delle classi essenziali saranno:
   * **Carta** (con valore e seme)
   * **Mazzo** (con le 52 carte e il metodo mescola, pesca)
