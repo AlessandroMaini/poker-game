@@ -3,8 +3,6 @@ package com.pokergame;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
@@ -13,6 +11,7 @@ import javafx.stage.Modality;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 public class PokerLoginController {
     @FXML
@@ -48,7 +47,7 @@ public class PokerLoginController {
     @FXML
     private void handleLogin() {
         boolean found = false;
-        for (Player p : getPlayerData()) {
+        for (Player p : Objects.requireNonNull(getPlayerData())) {
             if (p.username.equals(player.getUsername())) {
                 new Alert(Alert.AlertType.INFORMATION, "Successful access").showAndWait();
                 found = true;
@@ -68,7 +67,7 @@ public class PokerLoginController {
             new Alert(Alert.AlertType.ERROR, "Invalid name (no spaces)").showAndWait();
         else {
             boolean found = false;
-            for (Player p : getPlayerData()) {
+            for (Player p : Objects.requireNonNull(getPlayerData())) {
                 if (p.username.equals(player.getUsername())) {
                     new Alert(Alert.AlertType.ERROR, "This username is already taken").showAndWait();
                     found = true;
@@ -80,6 +79,9 @@ public class PokerLoginController {
         }
     }
 
+    /**
+     * Shows the statistics of all the registered users in a Dialog
+     */
     @FXML
     private void handleShowStatistics() {
         try {
