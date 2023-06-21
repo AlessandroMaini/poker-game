@@ -23,5 +23,4 @@ public class PokerStatisticsController {
         usernameColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
         playerTable.setItems(FXCollections.observableList(PokerLoginController.getPlayerData()));
     }
-
 }

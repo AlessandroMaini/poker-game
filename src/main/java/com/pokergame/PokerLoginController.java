@@ -34,7 +34,8 @@ public class PokerLoginController {
         try (FileReader file = new FileReader("./src/main/resources/com/pokergame/players.json")) {
             ObjectMapper mapper = new ObjectMapper();
             mapper.registerModule(new JavaTimeModule());
-            return mapper.readValue(file, new TypeReference<>() {});
+            return mapper.readValue(file, new TypeReference<>() {
+            });
         } catch (IOException e) {
             e.printStackTrace();
             return null;
