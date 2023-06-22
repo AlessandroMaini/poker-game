@@ -20,7 +20,7 @@
                </font>
             </Text>
             <Button layoutX="426.0" layoutY="188.0" mnemonicParsing="false" onAction="#handleSignIn" text="Sign in" AnchorPane.bottomAnchor="185.0" AnchorPane.leftAnchor="430.0" AnchorPane.rightAnchor="110.0" AnchorPane.topAnchor="190.0" />
-            <Button layoutX="380.0" layoutY="188.0" mnemonicParsing="false" onAction="#handleLogin" text="Login" AnchorPane.bottomAnchor="185.0" AnchorPane.leftAnchor="380.0" AnchorPane.rightAnchor="170.0" AnchorPane.topAnchor="190.0" />
+            <Button fx:id="loginButton" layoutX="380.0" layoutY="188.0" mnemonicParsing="false" onAction="#handleLogin" text="Login" AnchorPane.bottomAnchor="185.0" AnchorPane.leftAnchor="380.0" AnchorPane.rightAnchor="170.0" AnchorPane.topAnchor="190.0" />
             <TextField fx:id="username" layoutX="172.0" layoutY="188.0" prefHeight="25.0" prefWidth="208.0" AnchorPane.bottomAnchor="185.0" AnchorPane.leftAnchor="170.0" AnchorPane.rightAnchor="220.0" AnchorPane.topAnchor="190.0" />
             <Text layoutX="100.0" layoutY="206.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Username: " AnchorPane.bottomAnchor="185.0" AnchorPane.leftAnchor="100.0" AnchorPane.rightAnchor="430.0" AnchorPane.topAnchor="190.0">
                <font>

@@ -6,6 +6,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 
+import java.util.List;
+
 public class PokerStatisticsController {
 
     @FXML
@@ -21,6 +23,9 @@ public class PokerStatisticsController {
     public void initialize() {
         balanceColumn.setCellValueFactory(new PropertyValueFactory<>("balance"));
         usernameColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
-        playerTable.setItems(FXCollections.observableList(PokerLoginController.getPlayerData()));
+        List<Player> players = PokerLoginController.getPlayerData();
+        if (players != null)
+            playerTable.setItems(FXCollections.observableList(PokerLoginController.getPlayerData()));
+        else playerTable.setItems(null);
     }
 }

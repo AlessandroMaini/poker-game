@@ -5,22 +5,29 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
-import java.util.Objects;
 
 public class PokerLoginController {
+    /** path to the players database */
+    final public static String playerDatabase = "./src/main/resources/com/pokergame/players.json";
     @FXML
     private TextField username;
+    @FXML
+    private Button loginButton;
     Player player = new Player();
 
     /**
      * Initialize the control class. This method is automatically called after the fxml file has been loaded.
      */
+    @FXML
     public void initialize() {
         username.textProperty().addListener(((observable, oldValue, newValue) -> player.setUsername(newValue)));
     }
@@ -31,7 +38,7 @@ public class PokerLoginController {
      * @return the list of Player objects
      */
     static List<Player> getPlayerData() {
-        try (FileReader file = new FileReader("./src/main/resources/com/pokergame/players.json")) {
+        try (FileReader file = new FileReader(playerDatabase)) {
             ObjectMapper mapper = new ObjectMapper();
             mapper.registerModule(new JavaTimeModule());
             return mapper.readValue(file, new TypeReference<>() {
@@ -48,15 +55,24 @@ public class PokerLoginController {
     @FXML
     private void handleLogin() {
         boolean found = false;
-        for (Player p : Objects.requireNonNull(getPlayerData())) {
-            if (p.username.equals(player.getUsername())) {
-                new Alert(Alert.AlertType.INFORMATION, "Successful access").showAndWait();
-                found = true;
-                break;
+        List<Player> players = getPlayerData();
+        if (players != null)
+            for (Player p : players) {
+                if (p.username.equals(player.getUsername())) {
+                    player = p;
+                    found = true;
+                    break;
+                }
             }
-        }
         if (!found)
             new Alert(Alert.AlertType.ERROR, "Could not find the user").showAndWait();
+        else {
+            try {
+                switchToSceneLobby();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -68,15 +84,23 @@ public class PokerLoginController {
             new Alert(Alert.AlertType.ERROR, "Invalid name (no spaces)").showAndWait();
         else {
             boolean found = false;
-            for (Player p : Objects.requireNonNull(getPlayerData())) {
-                if (p.username.equals(player.getUsername())) {
-                    new Alert(Alert.AlertType.ERROR, "This username is already taken").showAndWait();
-                    found = true;
-                    break;
+            List<Player> players = getPlayerData();
+            if (players != null)
+                for (Player p : players) {
+                    if (p.username.equals(player.getUsername())) {
+                        new Alert(Alert.AlertType.ERROR, "This username is already taken").showAndWait();
+                        found = true;
+                        break;
+                    }
+                }
+            if (!found) {
+                player = new Player(player.getUsername());
+                try {
+                    switchToSceneLobby();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
-            if (!found)
-                new Alert(Alert.AlertType.INFORMATION, "Successful access").showAndWait();
         }
     }
 
@@ -117,12 +141,25 @@ public class PokerLoginController {
         System.exit(0);
     }
 
-    public Player getPlayer() {
-        return player;
-    }
+    /**
+     * Switches the Scene from Login to the Lobby
+     *
+     * @throws IOException if there's no loader
+     */
+    public void switchToSceneLobby() throws IOException {
+        FXMLLoader loader = new FXMLLoader();
+        loader.setLocation(getClass().getResource("poker-lobby-view.fxml"));
+        Parent root = loader.load();
 
-    public void setPlayer(Player player) {
-        this.player = player;
+        //Set the player into the controller.
+        PokerLobbyController controller = loader.getController();
+        controller.setPlayer(player);
+
+        //Create the stage.
+        Stage stage = (Stage) loginButton.getScene().getWindow();
+        Scene scene = new Scene(root);
+        stage.setScene(scene);
+        stage.show();
     }
 }
 
