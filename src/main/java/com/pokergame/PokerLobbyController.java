@@ -36,7 +36,19 @@ public class PokerLobbyController {
 
     @FXML
     public void handlePlay() {
-        new Alert(Alert.AlertType.INFORMATION, "Entered the table!").showAndWait();
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(getClass().getResource("poker-game-view.fxml"));
+            Parent root = loader.load();
+
+            //Create the stage.
+            Stage stage = (Stage) menuBar.getScene().getWindow();
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
