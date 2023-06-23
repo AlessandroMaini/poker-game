@@ -19,10 +19,10 @@
                   <Font size="20.0" />
                </font>
             </Text>
-            <Button layoutX="426.0" layoutY="188.0" mnemonicParsing="false" onAction="#handleSignIn" text="Sign in" AnchorPane.bottomAnchor="185.0" AnchorPane.leftAnchor="430.0" AnchorPane.rightAnchor="110.0" AnchorPane.topAnchor="190.0" />
-            <Button fx:id="loginButton" layoutX="380.0" layoutY="188.0" mnemonicParsing="false" onAction="#handleLogin" text="Login" AnchorPane.bottomAnchor="185.0" AnchorPane.leftAnchor="380.0" AnchorPane.rightAnchor="170.0" AnchorPane.topAnchor="190.0" />
-            <TextField fx:id="username" layoutX="172.0" layoutY="188.0" prefHeight="25.0" prefWidth="208.0" AnchorPane.bottomAnchor="185.0" AnchorPane.leftAnchor="170.0" AnchorPane.rightAnchor="220.0" AnchorPane.topAnchor="190.0" />
-            <Text layoutX="100.0" layoutY="206.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Username: " AnchorPane.bottomAnchor="185.0" AnchorPane.leftAnchor="100.0" AnchorPane.rightAnchor="430.0" AnchorPane.topAnchor="190.0">
+            <Button layoutX="440.0" layoutY="190.0" mnemonicParsing="false" onAction="#handleSignIn" text="Sign in" AnchorPane.bottomAnchor="180.0" AnchorPane.leftAnchor="440.0" AnchorPane.rightAnchor="90.0" AnchorPane.topAnchor="190.0" />
+            <Button fx:id="loginButton" layoutX="380.0" layoutY="188.0" mnemonicParsing="false" onAction="#handleLogin" text="Login" AnchorPane.bottomAnchor="180.0" AnchorPane.leftAnchor="380.0" AnchorPane.rightAnchor="160.0" AnchorPane.topAnchor="190.0" />
+            <TextField fx:id="username" layoutX="172.0" layoutY="188.0" prefHeight="25.0" prefWidth="208.0" AnchorPane.bottomAnchor="180.0" AnchorPane.leftAnchor="170.0" AnchorPane.rightAnchor="220.0" AnchorPane.topAnchor="190.0" />
+            <Text layoutX="100.0" layoutY="210.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Username: " AnchorPane.bottomAnchor="186.486328125" AnchorPane.leftAnchor="100.0" AnchorPane.rightAnchor="430.95703125" AnchorPane.topAnchor="194.892578125">
                <font>
                   <Font size="14.0" />
                </font>
