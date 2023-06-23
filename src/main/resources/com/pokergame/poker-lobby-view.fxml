@@ -16,7 +16,6 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-
 <BorderPane xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pokergame.PokerLobbyController">
    <center>
       <SplitPane dividerPositions="0.5">
@@ -56,7 +55,7 @@
                         <Image url="@poker-table.png" />
                      </image>
                   </ImageView>
-                  <Button layoutX="274.0" layoutY="250.0" mnemonicParsing="false" onAction="#handlePlay" text="Play" AnchorPane.bottomAnchor="125.0" AnchorPane.leftAnchor="274.0" AnchorPane.rightAnchor="288.0" AnchorPane.topAnchor="250.0" />
+                  <Button layoutX="268.0" layoutY="245.0" mnemonicParsing="false" onAction="#handlePlay" text="Play" AnchorPane.bottomAnchor="125.0" AnchorPane.leftAnchor="268.0" AnchorPane.rightAnchor="276.0" AnchorPane.topAnchor="245.0" />
                   <Text layoutX="257.0" layoutY="140.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Poker Table" AnchorPane.bottomAnchor="256.486328125" AnchorPane.leftAnchor="257.0" AnchorPane.rightAnchor="265.0361328125" AnchorPane.topAnchor="124.892578125">
                      <font>
                         <Font name="System Bold" size="14.0" />
