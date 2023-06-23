@@ -1,39 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.text.Font?>
 
 
 <AnchorPane fx:id="gamePane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pokergame.PokerGameController">
    <children>
-      <HBox fx:id="playerHBox" layoutX="400.0" layoutY="415.0">
+      <ImageView fitHeight="600.0" fitWidth="1000.0" pickOnBounds="true">
+         <image>
+            <Image url="@background.jpg" />
+         </image>
+      </ImageView>
+      <HBox fx:id="playerHBox" layoutX="400.0" layoutY="415.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="400.0" AnchorPane.rightAnchor="400.0" AnchorPane.topAnchor="415.0">
          <children>
             <ImageView fitHeight="145.0" fitWidth="100.0" pickOnBounds="true" preserveRatio="true" />
             <ImageView fitHeight="145.0" fitWidth="100.0" pickOnBounds="true" preserveRatio="true" />
          </children>
       </HBox>
-      <HBox layoutX="433.0" layoutY="69.0">
+      <HBox layoutX="431.0" layoutY="70.0" AnchorPane.bottomAnchor="430.0" AnchorPane.leftAnchor="431.0" AnchorPane.rightAnchor="431.0" AnchorPane.topAnchor="70.0">
          <children>
             <ImageView fitHeight="100.0" fitWidth="69.0" pickOnBounds="true" preserveRatio="true" />
             <ImageView fitHeight="100.0" fitWidth="69.0" pickOnBounds="true" preserveRatio="true" />
          </children>
       </HBox>
-      <HBox layoutX="108.0" layoutY="250.0">
+      <HBox layoutX="83.0" layoutY="250.0" AnchorPane.bottomAnchor="250.0" AnchorPane.leftAnchor="100.0" AnchorPane.rightAnchor="762.0" AnchorPane.topAnchor="250.0">
          <children>
             <ImageView fitHeight="100.0" fitWidth="69.0" pickOnBounds="true" preserveRatio="true" />
             <ImageView fitHeight="100.0" fitWidth="69.0" pickOnBounds="true" preserveRatio="true" />
          </children>
       </HBox>
-      <HBox layoutX="763.0" layoutY="250.0">
+      <HBox layoutX="763.0" layoutY="250.0" AnchorPane.bottomAnchor="250.0" AnchorPane.leftAnchor="762.0" AnchorPane.rightAnchor="100.0" AnchorPane.topAnchor="250.0">
          <children>
             <ImageView fitHeight="100.0" fitWidth="69.0" pickOnBounds="true" preserveRatio="true" />
             <ImageView fitHeight="100.0" fitWidth="69.0" pickOnBounds="true" preserveRatio="true" />
          </children>
       </HBox>
-      <ToolBar layoutX="730.0" layoutY="487.0" prefHeight="40.0">
+      <ToolBar layoutX="735.0" layoutY="468.0" AnchorPane.bottomAnchor="92.0" AnchorPane.leftAnchor="735.0" AnchorPane.rightAnchor="73.0" AnchorPane.topAnchor="468.0">
         <items>
           <Button mnemonicParsing="false" text="Call" />
             <Button mnemonicParsing="false" text="Fold" />
@@ -41,5 +52,110 @@
             <Button mnemonicParsing="false" text="Check" />
         </items>
       </ToolBar>
+      <HBox fx:id="communityHBox" layoutX="328.0" layoutY="250.0" prefHeight="100.0" prefWidth="200.0" AnchorPane.bottomAnchor="250.0" AnchorPane.leftAnchor="328.0" AnchorPane.rightAnchor="327.0" AnchorPane.topAnchor="250.0">
+         <children>
+            <ImageView fitHeight="100.0" fitWidth="69.0" pickOnBounds="true" preserveRatio="true" />
+            <ImageView fitHeight="100.0" fitWidth="69.0" pickOnBounds="true" preserveRatio="true" />
+            <ImageView fitHeight="100.0" fitWidth="69.0" pickOnBounds="true" preserveRatio="true" />
+            <ImageView fitHeight="100.0" fitWidth="69.0" pickOnBounds="true" preserveRatio="true" />
+            <ImageView fitHeight="100.0" fitWidth="69.0" pickOnBounds="true" preserveRatio="true" />
+         </children>
+      </HBox>
+      <GridPane layoutX="69.0" layoutY="190.0">
+        <columnConstraints>
+          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+        </columnConstraints>
+        <rowConstraints>
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+         <children>
+            <Label text="Username" textFill="WHITE" GridPane.halignment="CENTER">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Label>
+            <Label fx:id="bot1UsernameLabel" text="Label" textFill="WHITE" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
+            <Label text="Balance" textFill="WHITE" GridPane.columnIndex="1" GridPane.halignment="CENTER">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Label>
+            <Label fx:id="bot1BalanceLabel" text="Label" textFill="WHITE" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
+         </children>
+      </GridPane>
+      <GridPane layoutX="200.0" layoutY="415.0">
+         <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+         </columnConstraints>
+         <rowConstraints>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+         </rowConstraints>
+         <children>
+            <Label text="Username" textFill="WHITE" GridPane.halignment="CENTER">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Label>
+            <Label fx:id="playerUsernameLabel" text="Label" textFill="WHITE" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
+            <Label text="Balance" textFill="WHITE" GridPane.columnIndex="1" GridPane.halignment="CENTER">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Label>
+            <Label fx:id="playerBalanceLabel" text="Label" textFill="WHITE" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
+         </children>
+      </GridPane>
+      <GridPane layoutX="731.0" layoutY="190.0">
+         <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+         </columnConstraints>
+         <rowConstraints>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+         </rowConstraints>
+         <children>
+            <Label text="Username" textFill="WHITE" GridPane.halignment="CENTER">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Label>
+            <Label fx:id="bot3UsernameLabel" text="Label" textFill="WHITE" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
+            <Label text="Balance" textFill="WHITE" GridPane.columnIndex="1" GridPane.halignment="CENTER">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Label>
+            <Label fx:id="bot3BalanceLabel" text="Label" textFill="WHITE" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
+         </children>
+      </GridPane>
+      <GridPane layoutX="400.0" layoutY="10.0">
+         <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+         </columnConstraints>
+         <rowConstraints>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+         </rowConstraints>
+         <children>
+            <Label text="Username" textFill="WHITE" GridPane.halignment="CENTER">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Label>
+            <Label fx:id="bot2UsernameLabel" text="Label" textFill="WHITE" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
+            <Label text="Balance" textFill="WHITE" GridPane.columnIndex="1" GridPane.halignment="CENTER">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Label>
+            <Label fx:id="bot2BalanceLabel" text="Label" textFill="WHITE" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
+         </children>
+      </GridPane>
    </children>
 </AnchorPane>

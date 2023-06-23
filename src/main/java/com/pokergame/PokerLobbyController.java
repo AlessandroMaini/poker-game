@@ -41,6 +41,10 @@ public class PokerLobbyController {
             loader.setLocation(getClass().getResource("poker-game-view.fxml"));
             Parent root = loader.load();
 
+            //Set the player into the controller.
+            PokerGameController controller = loader.getController();
+            controller.setPlayers(player);
+
             //Create the stage.
             Stage stage = (Stage) menuBar.getScene().getWindow();
             Scene scene = new Scene(root);
@@ -79,8 +83,8 @@ public class PokerLobbyController {
      */
     public void setPlayer(Player player) {
         this.player = player;
-        balanceLabel.textProperty().set(Long.toString(player.getBalance()));
-        usernameLabel.textProperty().set(player.getUsername());
+        balanceLabel.setText(Long.toString(player.getBalance()));
+        usernameLabel.setText(player.getUsername());
         updatePlayerDatabase();
     }
 
@@ -102,7 +106,7 @@ public class PokerLobbyController {
                 players = new ArrayList<>();
             players.add(player);
         }
-        try (FileWriter file = new FileWriter(PokerLoginController.playerDatabase)) {
+        try (FileWriter file = new FileWriter(PokerLoginController.PLAYER_DATABASE)) {
             ObjectMapper mapper = new ObjectMapper();
             mapper.registerModule(new JavaTimeModule());
             mapper.writerWithDefaultPrettyPrinter().writeValue(file, players);

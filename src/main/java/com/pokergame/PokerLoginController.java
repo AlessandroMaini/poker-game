@@ -17,7 +17,7 @@ import java.util.List;
 
 public class PokerLoginController {
     /** path to the players database */
-    final public static String playerDatabase = "./src/main/resources/com/pokergame/players.json";
+    final public static String PLAYER_DATABASE = "./src/main/resources/com/pokergame/players.json";
     @FXML
     private TextField username;
     @FXML
@@ -38,7 +38,7 @@ public class PokerLoginController {
      * @return the list of Player objects
      */
     static List<Player> getPlayerData() {
-        try (FileReader file = new FileReader(playerDatabase)) {
+        try (FileReader file = new FileReader(PLAYER_DATABASE)) {
             ObjectMapper mapper = new ObjectMapper();
             mapper.registerModule(new JavaTimeModule());
             return mapper.readValue(file, new TypeReference<>() {
