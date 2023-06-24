@@ -9,7 +9,6 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pokergame.PokerGameController">
    <children>
       <ImageView fitHeight="800.0" fitWidth="1200.0" pickOnBounds="true">
@@ -23,10 +22,10 @@
       <Canvas fx:id="canvasPlayer3" height="245.0" layoutX="966.0" layoutY="278.0" width="220.0" AnchorPane.bottomAnchor="277.0" AnchorPane.leftAnchor="966.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="278.0" />
       <ToolBar layoutX="894.0" layoutY="651.0" AnchorPane.bottomAnchor="114.0" AnchorPane.leftAnchor="894.0" AnchorPane.rightAnchor="114.0" AnchorPane.topAnchor="651.0">
          <items>
-            <Button mnemonicParsing="false" text="Call" />
-            <Button mnemonicParsing="false" text="Fold" />
-            <Button mnemonicParsing="false" text="Raise" />
-            <Button mnemonicParsing="false" text="Check" />
+            <Button mnemonicParsing="false" onAction="#handleCall" text="Call" />
+            <Button mnemonicParsing="false" onAction="#handleFold" text="Fold" />
+            <Button mnemonicParsing="false" onAction="#handleRaise" text="Raise" />
+            <Button mnemonicParsing="false" onAction="#handleCheck" text="Check" />
          </items>
       </ToolBar>
       <Canvas fx:id="canvasCommunity" height="145.0" layoutX="310.0" layoutY="328.0" width="580.0" AnchorPane.bottomAnchor="327.0" AnchorPane.leftAnchor="310.0" AnchorPane.rightAnchor="310.0" AnchorPane.topAnchor="328.0" />

@@ -5,7 +5,7 @@ package com.pokergame;
  */
 public class PlayerHand {
     Player player;
-    Card[] cards = new Card[2];
+    Card[] cards;
 
     public PlayerHand(Player player, Card[] cards) {
         this.player = player;

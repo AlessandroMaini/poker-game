@@ -43,7 +43,7 @@ public class PokerLobbyController {
 
             //Set the player into the controller.
             PokerGameController controller = loader.getController();
-            controller.setPlayers(player);
+            controller.startGame(player);
 
             //Create the stage.
             Stage stage = (Stage) menuBar.getScene().getWindow();
