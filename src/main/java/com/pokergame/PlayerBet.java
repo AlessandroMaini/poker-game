@@ -4,15 +4,21 @@ public class PlayerBet {
     public Player player;
     public long bet;
     public boolean folded;
+    public boolean bigBlind;
 
-    public PlayerBet(Player player) {
+    public PlayerBet(Player player, boolean bigBlind) {
         this.player = player;
         this.bet = -1L;
         this.folded = false;
+        this.bigBlind = bigBlind;
     }
 
     public long getBet() {
         return bet;
+    }
+
+    public void initializeBet() {
+        this.bet = this.bet == -1 ? 0 : this.bet;
     }
 
     public void setBet(long bet) {
@@ -37,5 +43,9 @@ public class PlayerBet {
 
     public void setFolded(boolean folded) {
         this.folded = folded;
+    }
+
+    public boolean isBigBlind() {
+        return bigBlind;
     }
 }

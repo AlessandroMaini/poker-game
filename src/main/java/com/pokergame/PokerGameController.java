@@ -2,15 +2,19 @@ package com.pokergame;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -25,7 +29,7 @@ public class PokerGameController {
     final public int CARD_WIDTH = 100;
     final public static String IMAGE_DIRECTORY = "./src/main/resources/com/pokergame/cards";
     final public int NUM_PLAYERS = 4;
-    final public static int BLIND = 20;
+    final public static long BLIND = 20L;
     public Deck deck;
     public Pot pot;
     public Player[] players = new Player[NUM_PLAYERS];
@@ -35,7 +39,11 @@ public class PokerGameController {
     public int dealer = -1;
     public boolean playerMove = false;
     public long maxRaise = 0L;
-    public boolean flopShown = false;
+    public boolean flopShown;
+    public boolean turnShown;
+    public boolean riverShown;
+    public boolean firstGame;
+    public boolean bigBlindAction;
     @FXML
     private Canvas canvasCommunity;
 
@@ -51,16 +59,17 @@ public class PokerGameController {
     @FXML
     private Canvas canvasPlayer3;
 
+    @FXML
+    private ToggleButton leaveTableButton;
+
     public List<Canvas> canvasList;
 
     @FXML
     public void initialize() {
-        deck = new Deck();
-        deck.shuffle();
-        pot = new Pot();
-        communityCards = new CommunityCards();
+        firstGame = true;
         canvasList = Arrays.asList(canvasPlayer0, canvasPlayer1, canvasPlayer2, canvasPlayer3);
     }
+
     @FXML
     void handleCall() {
         if (playerMove) {
@@ -73,7 +82,7 @@ public class PokerGameController {
 
     @FXML
     void handleCheck() {
-        if (playerMove && (bets[0].getBet() == maxBet() || maxBet() <= 0)) {
+        if (playerMove && (bets[0].getBet() == maxBet())) {
             check(bets[0]);
             playerMove = false;
             setPlayerLabel(0);
@@ -93,7 +102,7 @@ public class PokerGameController {
 
     @FXML
     void handleRaise() {
-        if(playerMove) {
+        if (playerMove) {
             try {
                 FXMLLoader loader = new FXMLLoader();
                 loader.setLocation(getClass().getResource("poker-raise-view.fxml"));
@@ -133,10 +142,10 @@ public class PokerGameController {
         GraphicsContext graphicsContext = canvasList.get(index).getGraphicsContext2D();
         graphicsContext.setFill(Color.BLACK);
         graphicsContext.fillRect(0, 25, 220, 20);
-        graphicsContext.setFill(Color.WHITE);
+        graphicsContext.setStroke(Color.WHITE);
         graphicsContext.setFont(Font.font(14));
-        graphicsContext.fillText(players[index].getUsername(), 0, 40);
-        graphicsContext.fillText(Long.toString(players[index].getBalance()), 120, 40);
+        graphicsContext.strokeText(players[index].getUsername(), 0, 40);
+        graphicsContext.strokeText(Long.toString(players[index].getBalance()), 120, 40);
     }
 
     public void drawPlayersHands() {
@@ -170,27 +179,79 @@ public class PokerGameController {
         graphicsContext.drawImage(card3, 240, 0, CARD_WIDTH, CARD_HEIGHT);
     }
 
+    public void drawTurn() {
+        GraphicsContext graphicsContext = canvasCommunity.getGraphicsContext2D();
+        Image card = getImageCard(communityCards.getCommunityCardAt(communityCards.TURN));
+        graphicsContext.drawImage(card, 360, 0, CARD_WIDTH, CARD_HEIGHT);
+    }
+
+    public void drawRiver() {
+        GraphicsContext graphicsContext = canvasCommunity.getGraphicsContext2D();
+        Image card = getImageCard(communityCards.getCommunityCardAt(communityCards.RIVER));
+        graphicsContext.drawImage(card, 480, 0, CARD_WIDTH, CARD_HEIGHT);
+    }
+
     public void startGame(Player player) {
-        setPlayers(player);
-        setPlayersLabels();
-        setBets();
-        setDealer();
-        setBlinds();
-        setHands();
-        drawPlayersHands();
-        bet((dealer + 3) % NUM_PLAYERS);
+        if (leaveTableButton.isSelected())
+            returnToLobby();
+        else {
+            deck = new Deck();
+            deck.shuffle();
+            pot = new Pot();
+            flopShown = false;
+            turnShown = false;
+            riverShown = false;
+            bigBlindAction = false;
+            clearCommunityCanvas();
+            if (firstGame) {
+                setPlayers(player);
+                firstGame = false;
+            }
+            setPlayersLabels();
+            setDealer();
+            setBets();
+            setBlinds();
+            setHands();
+            drawPlayersHands();
+            bet((dealer + 3) % NUM_PLAYERS);
+        }
+    }
+
+    private void clearCommunityCanvas() {
+        communityCards = new CommunityCards();
+        canvasCommunity.getGraphicsContext2D().clearRect(0, 0, 580, CARD_HEIGHT);
     }
 
     public void flop() {
         flopShown = true;
         deck.drawCard();
-        Card[] cards =  {deck.drawCard(), deck.drawCard(), deck.drawCard()};
+        Card[] cards = {deck.drawCard(), deck.drawCard(), deck.drawCard()};
         communityCards.setFlop(cards);
         drawFlop();
         bet((dealer + 3) % NUM_PLAYERS);
     }
+
+    public void turn() {
+        turnShown = true;
+        deck.drawCard();
+        communityCards.setTurn(deck.drawCard());
+        drawTurn();
+        bet((dealer + 3) % NUM_PLAYERS);
+    }
+
+    public void river() {
+        riverShown = true;
+        deck.drawCard();
+        communityCards.setRiver(deck.drawCard());
+        drawRiver();
+        bet((dealer + 3) % NUM_PLAYERS);
+    }
+
     public void setDealer() {
         dealer = (dealer + 1) % NUM_PLAYERS;
+        System.out.println("Dealer in posizione " + dealer);
+        System.out.println("Piccolo buio in posizione " + (dealer + 1) % NUM_PLAYERS);
+        System.out.println("Grande buio in posizione " + (dealer + 2) % NUM_PLAYERS);
     }
 
     public void setPlayers(Player player) {
@@ -207,6 +268,8 @@ public class PokerGameController {
     }
 
     public void setBlinds() {
+        bets[(dealer + 1) % NUM_PLAYERS].initializeBet();
+        bets[(dealer + 2) % NUM_PLAYERS].initializeBet();
         playerBets(bets[(dealer + 1) % NUM_PLAYERS], BLIND / 2);
         playerBets(bets[(dealer + 2) % NUM_PLAYERS], BLIND);
         setPlayerLabel((dealer + 1) % NUM_PLAYERS);
@@ -221,31 +284,45 @@ public class PokerGameController {
     }
 
     public void setBets() {
-        for (int i = 0; i < NUM_PLAYERS; i++)
-            bets[i] = new PlayerBet(players[i]);
+        for (int i = 0; i < NUM_PLAYERS; i++) {
+            if (i == (dealer + 2) % NUM_PLAYERS)
+                bets[i] = new PlayerBet(players[i], true);
+            else bets[i] = new PlayerBet(players[i], false);
+        }
     }
 
     public void bet(int index) {
-        if(stopBetting()) {
+        if (stopBetting()) {
             resetBets();
-            if(!flopShown)
+            if (!flopShown)
                 flop();
-            else System.out.println("Fine Flop!");
+            else if (!turnShown)
+                turn();
+            else if (!riverShown)
+                river();
+            else {
+                System.out.println("SHOWDOWN!");
+                startGame(players[0]);
+            }
         } else if (bets[index].isFolded()) {
             bet((index + 1) % NUM_PLAYERS);
-        } else if (index == 0) {
-            playerMove = true;
-        }else {
-            if (bets[index].getBet() < maxBet() && maxBet() > 0) {
-                call(bets[index], maxBet());
-                System.out.println("CALL!");
+        } else {
+            if (index == (dealer + 2) % NUM_PLAYERS && !bigBlindAction)
+                bigBlindAction = true;
+            bets[index].initializeBet();
+            if (index == 0) {
+                playerMove = true;
+            } else {
+                if (bets[index].getBet() < maxBet()) {
+                    call(bets[index], maxBet());
+                    System.out.println("CALL!");
+                } else {
+                    System.out.println("CHECK!");
+                    check(bets[index]);
+                }
+                setPlayerLabel(index);
+                bet((index + 1) % NUM_PLAYERS);
             }
-            else {
-                System.out.println("CHECK!");
-                check(bets[index]);
-            }
-            setPlayerLabel(index);
-            bet((index + 1) % NUM_PLAYERS);
         }
     }
 
@@ -261,7 +338,9 @@ public class PokerGameController {
     }
 
     public void call(PlayerBet player, long bet) {
-        bet = Math.max(bet, BLIND);
+        if (player.isBigBlind() && !flopShown)
+            bet = Math.max(bet, 2 * BLIND);
+        else bet = Math.max(bet, BLIND);
         playerBets(player, bet - player.getBet());
     }
 
@@ -285,6 +364,7 @@ public class PokerGameController {
         int count = 0;
         long bet = 0L;
         boolean equals = true, first = true;
+
         for (int i = 0; i < NUM_PLAYERS; i++) {
             if (!bets[i].isFolded()) {
                 count++;
@@ -293,12 +373,16 @@ public class PokerGameController {
                     if (bet < 0)
                         equals = false;
                     first = false;
-                }
-                else if (bet != bets[i].getBet())
+                } else if (bet != bets[i].getBet())
                     equals = false;
             }
         }
-        return equals || count == 1;
+        if (count == 1)
+            return true;
+        //In the first round of bets the Big Blind can check, raise or fold.
+        if (!flopShown && !bigBlindAction)
+            return false;
+        return equals;
     }
 
     private long maxBet() {
@@ -308,5 +392,25 @@ public class PokerGameController {
                 max = bets[i].getBet();
         }
         return max;
+    }
+
+    public void returnToLobby() {
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(getClass().getResource("poker-lobby-view.fxml"));
+            Parent root = loader.load();
+
+            //Set the player into the controller.
+            PokerLobbyController controller = loader.getController();
+            controller.setPlayer(players[0]);
+
+            //Create the stage.
+            Stage stage = (Stage) leaveTableButton.getScene().getWindow();
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

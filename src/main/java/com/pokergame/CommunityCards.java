@@ -19,8 +19,7 @@ public class CommunityCards {
     }
 
     public void setFlop(Card[] cards) {
-        for (int i = 0; i < FLOP; i++)
-            communityCards[i] = cards[i];
+        System.arraycopy(cards, 0, communityCards, 0, FLOP);
     }
 
     public void setTurn(Card card) {

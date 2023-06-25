@@ -97,7 +97,7 @@ public class PokerLobbyController {
         if (players != null)
             for (Player p : players) {
                 if (p.getUsername().equals(player.getUsername())) {
-                    p = player;
+                    p.setBalance(player.getBalance());
                     found = true;
                 }
             }
