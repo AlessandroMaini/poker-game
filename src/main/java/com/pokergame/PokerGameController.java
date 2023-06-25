@@ -27,7 +27,9 @@ import java.util.random.RandomGenerator;
 public class PokerGameController {
     final public int CARD_HEIGHT = 145;
     final public int CARD_WIDTH = 100;
-    final public static String IMAGE_DIRECTORY = "./src/main/resources/com/pokergame/cards";
+    final public static String IMAGE_CARDS_DIRECTORY = "./src/main/resources/com/pokergame/cards";
+    final public String IMAGE_DEALER = "./src/main/resources/com/pokergame/dealer.png";
+    final public String IMAGE_CHIPS_DIRECTORY = "./src/main/resources/com/pokergame/chips";
     final public int NUM_PLAYERS = 4;
     final public static long BLIND = 20L;
     public Deck deck;
@@ -62,12 +64,40 @@ public class PokerGameController {
     @FXML
     private ToggleButton leaveTableButton;
 
-    public List<Canvas> canvasList;
+    @FXML
+    private Canvas canvasBet0;
+
+    @FXML
+    private Canvas canvasBet1;
+
+    @FXML
+    private Canvas canvasBet2;
+
+    @FXML
+    private Canvas canvasBet3;
+
+    @FXML
+    private Canvas canvasDealer0;
+
+    @FXML
+    private Canvas canvasDealer1;
+
+    @FXML
+    private Canvas canvasDealer2;
+
+    @FXML
+    private Canvas canvasDealer3;
+
+    public List<Canvas> canvasListPlayers;
+    public List<Canvas> canvasListDealer;
+    public List<Canvas> canvasListChips;
 
     @FXML
     public void initialize() {
         firstGame = true;
-        canvasList = Arrays.asList(canvasPlayer0, canvasPlayer1, canvasPlayer2, canvasPlayer3);
+        canvasListPlayers = Arrays.asList(canvasPlayer0, canvasPlayer1, canvasPlayer2, canvasPlayer3);
+        canvasListDealer = Arrays.asList(canvasDealer0, canvasDealer1, canvasDealer2, canvasDealer3);
+        canvasListChips = Arrays.asList(canvasBet0, canvasBet1, canvasBet2, canvasBet3);
     }
 
     @FXML
@@ -139,7 +169,7 @@ public class PokerGameController {
     }
 
     private void setPlayerLabel(int index) {
-        GraphicsContext graphicsContext = canvasList.get(index).getGraphicsContext2D();
+        GraphicsContext graphicsContext = canvasListPlayers.get(index).getGraphicsContext2D();
         graphicsContext.setFill(Color.BLACK);
         graphicsContext.fillRect(0, 25, 220, 20);
         graphicsContext.setStroke(Color.WHITE);
@@ -150,7 +180,7 @@ public class PokerGameController {
 
     public void drawPlayersHands() {
         for (int i = 0; i < NUM_PLAYERS; i++) {
-            GraphicsContext graphicsContext = canvasList.get(i).getGraphicsContext2D();
+            GraphicsContext graphicsContext = canvasListPlayers.get(i).getGraphicsContext2D();
             Card[] hand = hands[i].getCards();
             Image card1 = getImageCard(hand[0]);
             Image card2 = getImageCard(hand[1]);
@@ -160,7 +190,8 @@ public class PokerGameController {
     }
 
     public Image getImageCard(Card card) {
-        String path = String.format("%s/%s.png", IMAGE_DIRECTORY, card.toString());
+        String path = String.format("%s/%s.png", IMAGE_CARDS_DIRECTORY, card.toString());
+        //String path = String.format("%s/back.png", IMAGE_CARDS_DIRECTORY);
         try {
             return new Image(new FileInputStream(path));
         } catch (FileNotFoundException e) {
@@ -191,24 +222,96 @@ public class PokerGameController {
         graphicsContext.drawImage(card, 480, 0, CARD_WIDTH, CARD_HEIGHT);
     }
 
+    public void drawDealer() {
+        for (int i = 0; i < NUM_PLAYERS; i++) {
+            GraphicsContext graphicsContext = canvasListDealer.get(i).getGraphicsContext2D();
+            if (i == dealer) {
+                try {
+                    graphicsContext.drawImage(new Image(new FileInputStream(IMAGE_DEALER)), 0, 0, 75, 75);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            } else
+                graphicsContext.clearRect(0, 0, 75, 75);
+        }
+    }
+
+    public void drawPlayerChips(PlayerBet playerBet) {
+        int index = getPlayerBetIndex(playerBet);
+        GraphicsContext graphicsContext = canvasListChips.get(index).getGraphicsContext2D();
+        graphicsContext.clearRect(0, 0, 220, 100);
+        final int CHIP_COLORS = 6;
+        int[] chips = new int[CHIP_COLORS];
+        Arrays.fill(chips, 0);
+        getPlayerChips(pot.getPlayerAmount(index), chips);
+        int chipCounter = 0;
+        for (int i = 0; i < CHIP_COLORS; i++) {
+            String path = String.format("%s/%d-chip.png", IMAGE_CHIPS_DIRECTORY, i);
+            Image chipImage = null;
+            try {
+                chipImage = new Image(new FileInputStream(path));
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            while (chips[i] > 0 && chipCounter < 55) {
+                drawSingleChip(graphicsContext, chipImage, chipCounter);
+                chipCounter++;
+                chips[i]--;
+            }
+        }
+    }
+
+    private void drawSingleChip(GraphicsContext graphicsContext, Image image, int num) {
+        int y = (num % 5) * 20;
+        int x = 200 - (num / 5 * 20);
+        graphicsContext.drawImage(image, x, y, 20, 20);
+    }
+
+    private void getPlayerChips(long bet, int[] chips) {
+        long[] values = {10, 20, 40, 60, 100, 200};
+        for (int i = 5; i >= 0; i--) {
+            while (bet - values[i] >= 0) {
+                bet -= values[i];
+                chips[i]++;
+            }
+        }
+    }
+
+    private int getPlayerBetIndex(PlayerBet playerBet) {
+        for (int i = 0; i < NUM_PLAYERS; i++) {
+            if (bets[i].equals(playerBet))
+                return i;
+        }
+        return -1;
+    }
+
+    public void clearChips() {
+        for (Canvas canvas : canvasListChips) {
+            GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
+            graphicsContext.clearRect(0, 0, 220, 100);
+        }
+    }
+
     public void startGame(Player player) {
         if (leaveTableButton.isSelected())
             returnToLobby();
         else {
             deck = new Deck();
             deck.shuffle();
-            pot = new Pot();
+            pot = new Pot(NUM_PLAYERS);
             flopShown = false;
             turnShown = false;
             riverShown = false;
             bigBlindAction = false;
             clearCommunityCanvas();
+            clearChips();
             if (firstGame) {
                 setPlayers(player);
                 firstGame = false;
             }
             setPlayersLabels();
             setDealer();
+            drawDealer();
             setBets();
             setBlinds();
             setHands();
@@ -287,7 +390,8 @@ public class PokerGameController {
         for (int i = 0; i < NUM_PLAYERS; i++) {
             if (i == (dealer + 2) % NUM_PLAYERS)
                 bets[i] = new PlayerBet(players[i], true);
-            else bets[i] = new PlayerBet(players[i], false);
+            else
+                bets[i] = new PlayerBet(players[i], false);
         }
     }
 
@@ -340,12 +444,13 @@ public class PokerGameController {
     public void call(PlayerBet player, long bet) {
         if (player.isBigBlind() && !flopShown)
             bet = Math.max(bet, 2 * BLIND);
-        else bet = Math.max(bet, BLIND);
+        else
+            bet = Math.max(bet, BLIND);
         playerBets(player, bet - player.getBet());
     }
 
     public void raise(PlayerBet playerBet, long amount) {
-        amount = Math.min(playerBet.getPlayer().getBalance(), amount);
+        amount = Math.min(playerBet.getPlayer().getBalance(), amount + maxBet());
         playerBets(playerBet, amount);
         maxRaise = Math.max(amount, maxRaise);
     }
@@ -358,6 +463,8 @@ public class PokerGameController {
         playerBet.getPlayer().setBalance(playerBet.getPlayer().getBalance() - bet);
         playerBet.addBet(bet);
         pot.addAmount(bet);
+        pot.addPlayerAmount(getPlayerBetIndex(playerBet), bet);
+        drawPlayerChips(playerBet);
     }
 
     private boolean stopBetting() {

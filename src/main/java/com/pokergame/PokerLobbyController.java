@@ -79,6 +79,7 @@ public class PokerLobbyController {
 
     /**
      * Sets the player selected in the login scene.
+     *
      * @param player the player selected
      */
     public void setPlayer(Player player) {

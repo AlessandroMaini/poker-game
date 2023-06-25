@@ -81,8 +81,7 @@ public class PokerLoginController {
     @FXML
     private void handleSignIn() {
         if (player.getUsername() == null || player.getUsername().contains(" ") || player.getUsername().length() == 0 || player.getUsername().length() > 15)
-            new Alert(Alert.AlertType.ERROR,
-                    "Invalid name. The name must be shorter than 16 characters and must not contain spaces.").showAndWait();
+            new Alert(Alert.AlertType.ERROR, "Invalid name. The name must be shorter than 16 characters and must not contain spaces.").showAndWait();
         else {
             boolean found = false;
             List<Player> players = getPlayerData();

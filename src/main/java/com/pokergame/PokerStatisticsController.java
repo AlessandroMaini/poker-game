@@ -26,6 +26,7 @@ public class PokerStatisticsController {
         List<Player> players = PokerLoginController.getPlayerData();
         if (players != null)
             playerTable.setItems(FXCollections.observableList(PokerLoginController.getPlayerData()));
-        else playerTable.setItems(null);
+        else
+            playerTable.setItems(null);
     }
 }

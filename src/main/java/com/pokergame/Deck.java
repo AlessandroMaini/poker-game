@@ -30,6 +30,7 @@ public class Deck {
 
     /**
      * Draws the first card of the deck.
+     *
      * @return the card
      */
     public Card drawCard() {

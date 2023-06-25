@@ -1,5 +1,9 @@
 package com.pokergame;
 
+/**
+ * Associates each player to his turn bet as well as other properties such as: 'Has the player folded?' and 'Is the
+ * player big blind?'
+ */
 public class PlayerBet {
     public Player player;
     public long bet;

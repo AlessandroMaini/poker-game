@@ -29,5 +29,4 @@ public class PokerRaiseController {
         long mul = Math.round(valueDouble / baseValue);
         return mul * (long) baseValue;
     }
-
 }

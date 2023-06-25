@@ -21,7 +21,7 @@
       <Canvas fx:id="canvasPlayer1" height="245.0" layoutX="14.0" layoutY="278.0" width="220.0" AnchorPane.bottomAnchor="277.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="966.0" AnchorPane.topAnchor="278.0" />
       <Canvas fx:id="canvasPlayer2" height="245.0" layoutX="490.0" layoutY="14.0" width="220.0" AnchorPane.bottomAnchor="541.0" AnchorPane.leftAnchor="490.0" AnchorPane.rightAnchor="490.0" AnchorPane.topAnchor="14.0" />
       <Canvas fx:id="canvasPlayer3" height="245.0" layoutX="966.0" layoutY="278.0" width="220.0" AnchorPane.bottomAnchor="277.0" AnchorPane.leftAnchor="966.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="278.0" />
-      <ToolBar layoutX="895.0" layoutY="644.0" AnchorPane.bottomAnchor="116.0" AnchorPane.leftAnchor="895.0" AnchorPane.rightAnchor="88.0" AnchorPane.topAnchor="644.0">
+      <ToolBar layoutX="782.0" layoutY="664.0" AnchorPane.bottomAnchor="96.0" AnchorPane.leftAnchor="782.0" AnchorPane.rightAnchor="201.0" AnchorPane.topAnchor="664.0">
          <items>
             <Button mnemonicParsing="false" onAction="#handleCall" text="Call">
                <font>
@@ -82,10 +82,18 @@
             <Font size="14.0" />
          </font>
       </Label>
-      <ToggleButton fx:id="leaveTableButton" layoutX="68.0" layoutY="649.0" mnemonicParsing="false" text="Leave the table" AnchorPane.bottomAnchor="121.0" AnchorPane.leftAnchor="68.0" AnchorPane.rightAnchor="1020.0" AnchorPane.topAnchor="649.0">
+      <ToggleButton fx:id="leaveTableButton" layoutX="14.0" layoutY="756.0" mnemonicParsing="false" text="Leave the table" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="1074.0" AnchorPane.topAnchor="756.0">
          <font>
             <Font size="14.0" />
          </font>
       </ToggleButton>
+      <Canvas fx:id="canvasDealer1" height="75.0" layoutX="234.0" layoutY="278.0" width="75.0" AnchorPane.bottomAnchor="447.0" AnchorPane.leftAnchor="234.0" AnchorPane.rightAnchor="891.0" AnchorPane.topAnchor="278.0" />
+      <Canvas fx:id="canvasDealer3" height="75.0" layoutX="890.0" layoutY="278.0" width="75.0" AnchorPane.bottomAnchor="447.0" AnchorPane.leftAnchor="890.0" AnchorPane.rightAnchor="235.0" AnchorPane.topAnchor="278.0" />
+      <Canvas fx:id="canvasDealer0" height="75.0" layoutX="710.0" layoutY="541.0" width="75.0" AnchorPane.bottomAnchor="184.0" AnchorPane.leftAnchor="710.0" AnchorPane.rightAnchor="415.0" AnchorPane.topAnchor="541.0" />
+      <Canvas fx:id="canvasDealer2" height="75.0" layoutX="710.0" layoutY="14.0" width="75.0" AnchorPane.bottomAnchor="711.0" AnchorPane.leftAnchor="710.0" AnchorPane.rightAnchor="415.0" AnchorPane.topAnchor="14.0" />
+      <Canvas fx:id="canvasBet1" height="100.0" layoutX="14.0" layoutY="523.0" width="220.0" AnchorPane.bottomAnchor="177.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="966.0" AnchorPane.topAnchor="523.0" />
+      <Canvas fx:id="canvasBet3" height="100.0" layoutX="390.0" layoutY="328.0" width="220.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="523.0" />
+      <Canvas fx:id="canvasBet0" height="100.0" layoutX="24.0" layoutY="533.0" width="220.0" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="270.0" />
+      <Canvas fx:id="canvasBet2" height="100.0" layoutX="243.0" layoutY="87.0" width="220.0" AnchorPane.bottomAnchor="541.0" AnchorPane.leftAnchor="270.0" />
    </children>
 </AnchorPane>

@@ -1,7 +1,7 @@
 package com.pokergame;
 
 /**
- * Associate each player to 2 cards (his hand).
+ * Associates each player to 2 cards (his hand).
  */
 public class PlayerHand {
     Player player;
