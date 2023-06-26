@@ -25,6 +25,8 @@ public class PlayerHand {
         return cards;
     }
 
+    public Card getCardAt(int position) {return cards[position]; }
+
     public void setCards(Card[] cards) {
         this.cards = cards;
     }

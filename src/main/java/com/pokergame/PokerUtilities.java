@@ -7,23 +7,34 @@ import java.util.Comparator;
 public class PokerUtilities {
     public static int KINDS_OF_HAND = 10;
     public static int evaluation;
-    PlayerHand playerHand;
-    CommunityCards communityCards;
+    CardInformation[] availableCards;
+
+    static int availableCardsNumber;
 
     public PokerUtilities(PlayerHand playerHand, CommunityCards communityCards) {
-        this.playerHand = playerHand;
-        this.communityCards = communityCards;
         this.evaluation = 0;
-    }
-    public  int evaluate(){
-        for(int i = 0; i < KINDS_OF_HAND; i++) {
 
+        availableCardsNumber = 2 + communityCards.phase;
+
+    }
+
+    public void setAvailableCards(PlayerHand playerHand, CommunityCards communityCards) {
+        availableCards = new CardInformation[availableCardsNumber];
+        for(int i = 0; i < 2; i++){
+            availableCards[i] = new CardInformation(playerHand.getCardAt(i), i, false);
         }
+
+        for(int i = 2; i < availableCardsNumber; i++){
+            availableCards[i] = new CardInformation(playerHand.getCardAt(i), i, true);
+        }
+    }
+
+    public  int evaluate(){
 
     }
 
     public static int highCard(){
-
+        a
     }
     public static int pair(){
 
