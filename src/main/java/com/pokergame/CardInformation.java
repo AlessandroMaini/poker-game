@@ -9,4 +9,13 @@ public class CardInformation extends Card{
         this.community = community;
         this.position = position;
     }
+
+    public CardInformation(CardInformation cardInformation){
+        super(cardInformation);
+    }
+
+    public void setCard(Card card) {
+        this.suit = card.suit;
+        this.value = card.value;
+    }
 }
