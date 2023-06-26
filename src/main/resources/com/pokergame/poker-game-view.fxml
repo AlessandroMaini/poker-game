@@ -9,6 +9,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.text.TextFlow?>
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pokergame.PokerGameController">
    <children>
@@ -91,9 +92,16 @@
       <Canvas fx:id="canvasDealer3" height="75.0" layoutX="890.0" layoutY="278.0" width="75.0" AnchorPane.bottomAnchor="447.0" AnchorPane.leftAnchor="890.0" AnchorPane.rightAnchor="235.0" AnchorPane.topAnchor="278.0" />
       <Canvas fx:id="canvasDealer0" height="75.0" layoutX="710.0" layoutY="541.0" width="75.0" AnchorPane.bottomAnchor="184.0" AnchorPane.leftAnchor="710.0" AnchorPane.rightAnchor="415.0" AnchorPane.topAnchor="541.0" />
       <Canvas fx:id="canvasDealer2" height="75.0" layoutX="710.0" layoutY="14.0" width="75.0" AnchorPane.bottomAnchor="711.0" AnchorPane.leftAnchor="710.0" AnchorPane.rightAnchor="415.0" AnchorPane.topAnchor="14.0" />
-      <Canvas fx:id="canvasBet1" height="100.0" layoutX="14.0" layoutY="523.0" width="220.0" AnchorPane.bottomAnchor="177.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="966.0" AnchorPane.topAnchor="523.0" />
-      <Canvas fx:id="canvasBet3" height="100.0" layoutX="390.0" layoutY="328.0" width="220.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="523.0" />
-      <Canvas fx:id="canvasBet0" height="100.0" layoutX="24.0" layoutY="533.0" width="220.0" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="270.0" />
-      <Canvas fx:id="canvasBet2" height="100.0" layoutX="243.0" layoutY="87.0" width="220.0" AnchorPane.bottomAnchor="541.0" AnchorPane.leftAnchor="270.0" />
+      <Canvas fx:id="canvasBet1" height="120.0" layoutX="14.0" layoutY="523.0" width="220.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="966.0" AnchorPane.topAnchor="523.0" />
+      <Canvas fx:id="canvasBet3" height="120.0" layoutX="390.0" layoutY="328.0" width="220.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="523.0" />
+      <Canvas fx:id="canvasBet0" height="120.0" layoutX="24.0" layoutY="533.0" width="220.0" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="250.0" />
+      <Canvas fx:id="canvasBet2" height="120.0" layoutX="243.0" layoutY="87.0" width="220.0" AnchorPane.bottomAnchor="541.0" AnchorPane.leftAnchor="250.0" />
+      <Canvas fx:id="canvasChoose" height="40.0" layoutX="782.0" layoutY="614.0" width="217.0" AnchorPane.bottomAnchor="136.0" AnchorPane.leftAnchor="782.0" />
+      <ImageView fitHeight="270.0" fitWidth="340.0" layoutX="791.0" layoutY="24.0" pickOnBounds="true" preserveRatio="true" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <image>
+            <Image url="@frame.jpg" />
+         </image>
+      </ImageView>
+      <TextFlow fx:id="textFlowNarrator" layoutX="890.0" layoutY="12.0" prefHeight="230.0" prefWidth="300.0" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="20.0" />
    </children>
 </AnchorPane>

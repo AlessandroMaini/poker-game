@@ -18,8 +18,8 @@ public class PokerRaiseController {
         baseValue = minRaise == 0 ? PokerGameController.BLIND : minRaise;
         sliderRaise.setMax(baseValue * 10);
         sliderRaise.setMin(baseValue);
-        sliderRaise.setMajorTickUnit(baseValue * 2);
-        sliderRaise.setMinorTickCount(1);
+        sliderRaise.setMajorTickUnit(baseValue * 3);
+        sliderRaise.setMinorTickCount(2);
         sliderRaise.setBlockIncrement(baseValue);
         sliderRaise.setSnapToTicks(true);
     }

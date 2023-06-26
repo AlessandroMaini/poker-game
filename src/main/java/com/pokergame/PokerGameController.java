@@ -12,7 +12,7 @@ import javafx.scene.control.DialogPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
+import javafx.scene.text.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -46,6 +46,7 @@ public class PokerGameController {
     public boolean riverShown;
     public boolean firstGame;
     public boolean bigBlindAction;
+    public RandomGenerator randomGenerator = RandomGenerator.getDefault();
     @FXML
     private Canvas canvasCommunity;
 
@@ -88,6 +89,12 @@ public class PokerGameController {
     @FXML
     private Canvas canvasDealer3;
 
+    @FXML
+    private Canvas canvasChoose;
+
+    @FXML
+    private TextFlow textFlowNarrator;
+
     public List<Canvas> canvasListPlayers;
     public List<Canvas> canvasListDealer;
     public List<Canvas> canvasListChips;
@@ -106,6 +113,7 @@ public class PokerGameController {
             call(bets[0], maxBet());
             playerMove = false;
             setPlayerLabel(0);
+            clearCanvasChoose();
             bet(1);
         }
     }
@@ -116,6 +124,7 @@ public class PokerGameController {
             check(bets[0]);
             playerMove = false;
             setPlayerLabel(0);
+            clearCanvasChoose();
             bet(1);
         }
     }
@@ -126,6 +135,7 @@ public class PokerGameController {
             fold(bets[0]);
             playerMove = false;
             setPlayerLabel(0);
+            clearCanvasChoose();
             bet(1);
         }
     }
@@ -154,6 +164,7 @@ public class PokerGameController {
                     raise(bets[0], controller.getRaise());
                     playerMove = false;
                     setPlayerLabel(0);
+                    clearCanvasChoose();
                     bet(1);
                 }
             } catch (IOException e) {
@@ -239,8 +250,13 @@ public class PokerGameController {
     public void drawPlayerChips(PlayerBet playerBet) {
         int index = getPlayerBetIndex(playerBet);
         GraphicsContext graphicsContext = canvasListChips.get(index).getGraphicsContext2D();
-        graphicsContext.clearRect(0, 0, 220, 100);
-        final int CHIP_COLORS = 6;
+        graphicsContext.clearRect(0, 0, 220, 120);
+        String betString = String.format("Bet: %d", pot.getPlayerAmount(index));
+        graphicsContext.setTextAlign(TextAlignment.RIGHT);
+        graphicsContext.setFill(Color.WHITE);
+        graphicsContext.setFont(Font.font(14));
+        graphicsContext.fillText(betString, 220, 10);
+        final int CHIP_COLORS = 7;
         int[] chips = new int[CHIP_COLORS];
         Arrays.fill(chips, 0);
         getPlayerChips(pot.getPlayerAmount(index), chips);
@@ -262,14 +278,14 @@ public class PokerGameController {
     }
 
     private void drawSingleChip(GraphicsContext graphicsContext, Image image, int num) {
-        int y = (num % 5) * 20;
+        int y = ((num % 5) * 20) + 20;
         int x = 200 - (num / 5 * 20);
         graphicsContext.drawImage(image, x, y, 20, 20);
     }
 
     private void getPlayerChips(long bet, int[] chips) {
-        long[] values = {10, 20, 40, 60, 100, 200};
-        for (int i = 5; i >= 0; i--) {
+        long[] values = {10, 20, 40, 60, 100, 200, 1000};
+        for (int i = values.length - 1; i >= 0; i--) {
             while (bet - values[i] >= 0) {
                 bet -= values[i];
                 chips[i]++;
@@ -288,8 +304,30 @@ public class PokerGameController {
     public void clearChips() {
         for (Canvas canvas : canvasListChips) {
             GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
-            graphicsContext.clearRect(0, 0, 220, 100);
+            graphicsContext.clearRect(0, 0, 220, 120);
         }
+    }
+
+    public void setCanvasChoose() {
+        GraphicsContext graphicsContext = canvasChoose.getGraphicsContext2D();
+        graphicsContext.setFill(Color.WHITE);
+        graphicsContext.setFont(Font.font(14));
+        if (bets[0].getBet() != maxBet()) {
+            String callString = String.format("You have to call %d", maxBet() - bets[0].getBet());
+            graphicsContext.fillText(callString, 0, 10);
+        }
+        graphicsContext.fillText("Choose your action:", 0, 30);
+    }
+
+    private void clearCanvasChoose() {
+        GraphicsContext graphicsContext = canvasChoose.getGraphicsContext2D();
+        graphicsContext.clearRect(0, 0, 217, 40);
+    }
+
+    public void updateTextFlowNarrator(Text text) {
+        if (textFlowNarrator.getChildren().size() == 12)
+            textFlowNarrator.getChildren().remove(0);
+        textFlowNarrator.getChildren().add(text);
     }
 
     public void startGame(Player player) {
@@ -312,6 +350,10 @@ public class PokerGameController {
             setPlayersLabels();
             setDealer();
             drawDealer();
+            Text startText = new Text("-----NEW GAME STARTING-----\n");
+            startText.setFill(Color.BLACK);
+            startText.setFont(Font.font("System", FontWeight.BOLD, 14));
+            updateTextFlowNarrator(startText);
             setBets();
             setBlinds();
             setHands();
@@ -365,8 +407,8 @@ public class PokerGameController {
 
     public Player generateBot(Player player) {
         Player p = new Player();
-        p.setBalance(RandomGenerator.getDefault().nextLong((long) (player.getBalance() - (player.getBalance() * 0.5)), (long) (player.getBalance() + (player.getBalance() * 0.5))));
-        p.setUsername(String.format("Bot%d", RandomGenerator.getDefault().nextInt(1, 1000)));
+        p.setBalance(randomGenerator.nextLong((long) (player.getBalance() - (player.getBalance() * 0.5)), (long) (player.getBalance() + (player.getBalance() * 0.5))));
+        p.setUsername(String.format("Bot%d", randomGenerator.nextInt(1, 1000)));
         return p;
     }
 
@@ -415,11 +457,17 @@ public class PokerGameController {
                 bigBlindAction = true;
             bets[index].initializeBet();
             if (index == 0) {
+                setCanvasChoose();
                 playerMove = true;
             } else {
                 if (bets[index].getBet() < maxBet()) {
-                    call(bets[index], maxBet());
-                    System.out.println("CALL!");
+                    if (randomGenerator.nextInt() % 2 == 0) {
+                        call(bets[index], maxBet());
+                        System.out.println("CALL!");
+                    } else {
+                        raise(bets[index], Math.max(maxRaise, BLIND));
+                        System.out.println("RAISE!");
+                    }
                 } else {
                     System.out.println("CHECK!");
                     check(bets[index]);
@@ -437,26 +485,47 @@ public class PokerGameController {
         maxRaise = 0L;
     }
 
-    public void check(PlayerBet player) {
-        playerBets(player, 0L);
+    public void check(PlayerBet playerBet) {
+        playerBets(playerBet, 0L);
+        getActionText("CHECK", playerBet.getPlayer().getUsername(), 0);
     }
 
-    public void call(PlayerBet player, long bet) {
-        if (player.isBigBlind() && !flopShown)
+    public void call(PlayerBet playerBet, long bet) {
+        if (playerBet.isBigBlind() && !flopShown)
             bet = Math.max(bet, 2 * BLIND);
         else
             bet = Math.max(bet, BLIND);
-        playerBets(player, bet - player.getBet());
+        playerBets(playerBet, bet - playerBet.getBet());
+        getActionText("CALL", playerBet.getPlayer().getUsername(), 0);
     }
 
     public void raise(PlayerBet playerBet, long amount) {
-        amount = Math.min(playerBet.getPlayer().getBalance(), amount + maxBet());
-        playerBets(playerBet, amount);
         maxRaise = Math.max(amount, maxRaise);
+        amount = Math.min(playerBet.getPlayer().getBalance(), amount + (maxBet() - playerBet.getBet()));
+        playerBets(playerBet, amount);
+        getActionText("RAISE", playerBet.getPlayer().getUsername(), maxBet());
     }
 
     public void fold(PlayerBet playerBet) {
         playerBet.setFolded(true);
+        getActionText("FOLD", playerBet.getPlayer().getUsername(), 0);
+    }
+
+    public void getActionText(String action, String user, long amount) {
+        String actionString;
+        if (amount != 0) {
+            actionString = String.format("%s %sS to %d\n", user, action, amount);
+        } else
+            actionString = String.format("%s %sS\n", user, action);
+        Text actionText = new Text(actionString);
+        actionText.setFont(Font.font(14));
+        switch (action) {
+            case "RAISE" -> actionText.setFill(Color.BLUE);
+            case "CALL" -> actionText.setFill(Color.GREEN);
+            case "CHECK" -> actionText.setFill(Color.GREY);
+            case "FOLD" -> actionText.setFill(Color.RED);
+        }
+        updateTextFlowNarrator(actionText);
     }
 
     public void playerBets(PlayerBet playerBet, long bet) {
