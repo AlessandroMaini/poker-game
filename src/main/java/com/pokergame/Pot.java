@@ -4,11 +4,19 @@ import java.util.Arrays;
 
 /**
  * The set of bets made in the game. With also the value of the bet for each player in an array.
+ *
+ * @author Alessandro Maini
+ * @version 2023.06.28
  */
 public class Pot {
     public long amount;
     public long[] cumulativeBet;
 
+    /**
+     * Initialize a new empty pot and an empty player's bets array.
+     *
+     * @param numPlayers the number of players
+     */
     public Pot(int numPlayers) {
         amount = 0;
         cumulativeBet = new long[numPlayers];

@@ -8,6 +8,12 @@ import javafx.scene.control.cell.PropertyValueFactory;
 
 import java.util.List;
 
+/**
+ * Statistics view controller.
+ *
+ * @author Alessandro Maini
+ * @version 2023.06.28
+ */
 public class PokerStatisticsController {
 
     @FXML
@@ -19,6 +25,9 @@ public class PokerStatisticsController {
     @FXML
     private TableColumn<Player, String> usernameColumn;
 
+    /**
+     * Initialize the control class. This method is automatically called after the fxml file has been loaded.
+     */
     @FXML
     public void initialize() {
         balanceColumn.setCellValueFactory(new PropertyValueFactory<>("balance"));

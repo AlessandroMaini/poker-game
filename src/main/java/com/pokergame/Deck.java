@@ -13,6 +13,9 @@ import java.util.List;
 public class Deck {
     List<Card> cards;
 
+    /**
+     * Initialize a new deck with all the 52 cards in order.
+     */
     public Deck() {
         this.cards = new ArrayList<>();
         for (int i = 0; i < 52; i++) {

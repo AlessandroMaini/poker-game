@@ -16,6 +16,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Lobby view controller.
+ *
+ * @author Alessandro Maini
+ * @version 2023.06.28
+ */
 public class PokerLobbyController {
 
     @FXML
@@ -28,14 +34,20 @@ public class PokerLobbyController {
     private MenuBar menuBar;
     Player player;
 
+    /**
+     * Initialize the control class. This method is automatically called after the fxml file has been loaded.
+     */
     @FXML
     public void initialize() {
         balanceLabel.textProperty().addListener((observable, oldValue, newValue) -> player.setBalance(Long.parseLong(newValue)));
         usernameLabel.textProperty().addListener((observable, oldValue, newValue) -> player.setUsername(newValue));
     }
 
+    /**
+     * Switches the Scene from Lobby to Game and allows you to play a poker game at the table.
+     */
     @FXML
-    public void handlePlay() {
+    void handlePlay() {
         try {
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(getClass().getResource("poker-game-view.fxml"));
@@ -55,8 +67,11 @@ public class PokerLobbyController {
         }
     }
 
+    /**
+     * Switches the Scene from Lobby to Login and allows you to select a different player.
+     */
     @FXML
-    public void handleChangePlayer() {
+    void handleChangePlayer() {
         try {
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(getClass().getResource("poker-login-view.fxml"));
@@ -72,8 +87,11 @@ public class PokerLobbyController {
         }
     }
 
+    /**
+     * Exit the game.
+     */
     @FXML
-    public void handleExit() {
+    void handleExit() {
         System.exit(0);
     }
 
