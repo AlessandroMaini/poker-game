@@ -19,9 +19,7 @@ import javafx.stage.Stage;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.random.RandomGenerator;
 
 /**
@@ -46,9 +44,9 @@ public class PokerGameController {
     final public static long BLIND = 20L;
     public Deck deck;
     public Pot pot;
-    public Player[] players = new Player[NUM_PLAYERS];
-    public PlayerHand[] hands = new PlayerHand[NUM_PLAYERS];
-    public PlayerBet[] bets = new PlayerBet[NUM_PLAYERS];
+    public List<Player> players;
+    public List<PlayerHand> hands;
+    public List<PlayerBet> bets;
     public CommunityCards communityCards;
     /** Dealer index in the players array */
     public int dealer = -1;
@@ -130,7 +128,7 @@ public class PokerGameController {
     @FXML
     void handleCall() {
         if (userMove) {
-            call(bets[0], maxBet());
+            call(bets.get(0), maxBet());
             userMove = false;
             setPlayerLabel(0);
             clearCanvasChoose();
@@ -143,8 +141,8 @@ public class PokerGameController {
      */
     @FXML
     void handleCheck() {
-        if (userMove && (bets[0].getBet() == maxBet())) {
-            check(bets[0]);
+        if (userMove && (bets.get(0).getBet() == maxBet())) {
+            check(bets.get(0));
             userMove = false;
             setPlayerLabel(0);
             clearCanvasChoose();
@@ -158,7 +156,7 @@ public class PokerGameController {
     @FXML
     void handleFold() {
         if (userMove) {
-            fold(bets[0]);
+            fold(bets.get(0));
             userMove = false;
             setPlayerLabel(0);
             clearCanvasChoose();
@@ -190,7 +188,7 @@ public class PokerGameController {
                 // Show the dialog and wait until the user closes it
                 Optional<ButtonType> clickedButton = dialog.showAndWait();
                 if (clickedButton.orElse(ButtonType.CANCEL) == ButtonType.OK) {
-                    raise(bets[0], controller.getRaise());
+                    raise(bets.get(0), controller.getRaise());
                     userMove = false;
                     setPlayerLabel(0);
                     clearCanvasChoose();
@@ -219,8 +217,8 @@ public class PokerGameController {
         graphicsContext.fillRect(0, 25, 220, 20);
         graphicsContext.setStroke(Color.WHITE);
         graphicsContext.setFont(Font.font(14));
-        graphicsContext.strokeText(players[index].getUsername(), 0, 40);
-        graphicsContext.strokeText(Long.toString(players[index].getBalance()), 120, 40);
+        graphicsContext.strokeText(players.get(index).getUsername(), 0, 40);
+        graphicsContext.strokeText(Long.toString(players.get(index).getBalance()), 120, 40);
     }
 
     /**
@@ -229,9 +227,9 @@ public class PokerGameController {
     void drawPlayersHands() {
         for (int i = 0; i < NUM_PLAYERS; i++) {
             GraphicsContext graphicsContext = canvasListPlayers.get(i).getGraphicsContext2D();
-            Card[] hand = hands[i].getCards();
-            Image card1 = getImageCard(hand[0]);
-            Image card2 = getImageCard(hand[1]);
+            List<Card> hand = hands.get(i).getCards();
+            Image card1 = getImageCard(hand.get(0));
+            Image card2 = getImageCard(hand.get(1));
             graphicsContext.drawImage(card1, 0, 80, CARD_WIDTH, CARD_HEIGHT);
             graphicsContext.drawImage(card2, 120, 80, CARD_WIDTH, CARD_HEIGHT);
         }
@@ -309,7 +307,7 @@ public class PokerGameController {
      * @param playerBet the player whose bet you want to draw
      */
     void drawPlayerChips(PlayerBet playerBet) {
-        int index = getPlayerBetIndex(playerBet);
+        int index = bets.indexOf(playerBet);
         GraphicsContext graphicsContext = canvasListChips.get(index).getGraphicsContext2D();
         graphicsContext.clearRect(0, 0, 220, 120);
         String betString = String.format("Bet: %d", pot.getPlayerAmount(index));
@@ -356,21 +354,6 @@ public class PokerGameController {
     }
 
     /**
-     * Obtain the index of a certain player in the playerBet array.
-     *
-     * @param playerBet the player whose index you want
-     *
-     * @return the index
-     */
-    public int getPlayerBetIndex(PlayerBet playerBet) {
-        for (int i = 0; i < NUM_PLAYERS; i++) {
-            if (bets[i].equals(playerBet))
-                return i;
-        }
-        return -1;
-    }
-
-    /**
      * Clears the chips shown on the screen.
      */
     void clearChips() {
@@ -387,8 +370,8 @@ public class PokerGameController {
         GraphicsContext graphicsContext = canvasChoose.getGraphicsContext2D();
         graphicsContext.setFill(Color.WHITE);
         graphicsContext.setFont(Font.font(14));
-        if (bets[0].getBet() != maxBet()) {
-            String callString = String.format("You have to call %d", maxBet() - bets[0].getBet());
+        if (bets.get(0).getBet() != maxBet()) {
+            String callString = String.format("You have to call %d", maxBet() - bets.get(0).getBet());
             graphicsContext.fillText(callString, 0, 10);
         }
         graphicsContext.fillText("Choose your action:", 0, 30);
@@ -459,7 +442,7 @@ public class PokerGameController {
     public void flop() {
         communityCards.setFlopShown(true);
         deck.drawCard();
-        Card[] cards = {deck.drawCard(), deck.drawCard(), deck.drawCard()};
+        List<Card> cards = List.of(deck.drawCard(), deck.drawCard(), deck.drawCard());
         communityCards.setFlop(cards);
         drawFlop();
         bet((dealer + 3) % NUM_PLAYERS);
@@ -503,9 +486,10 @@ public class PokerGameController {
      * @param player the user's player
      */
     public void setPlayers(Player player) {
-        players[0] = player;
+        players = new ArrayList<>();
+        players.add(player);
         for (int i = 1; i < NUM_PLAYERS; i++)
-            players[i] = generateBot(player);
+            players.add(generateBot(player));
     }
 
     /**
@@ -526,33 +510,46 @@ public class PokerGameController {
      * Sets the blind bets.
      */
     public void setBlinds() {
-        bets[(dealer + 1) % NUM_PLAYERS].initializeBet();
-        bets[(dealer + 2) % NUM_PLAYERS].initializeBet();
-        playerBets(bets[(dealer + 1) % NUM_PLAYERS], BLIND / 2);
-        playerBets(bets[(dealer + 2) % NUM_PLAYERS], BLIND);
+        bets.get((dealer + 1) % NUM_PLAYERS).initializeBet();
+        bets.get((dealer + 2) % NUM_PLAYERS).initializeBet();
+        playerBets(bets.get((dealer + 1) % NUM_PLAYERS), BLIND / 2);
+        playerBets(bets.get((dealer + 2) % NUM_PLAYERS), BLIND);
         setPlayerLabel((dealer + 1) % NUM_PLAYERS);
         setPlayerLabel((dealer + 2) % NUM_PLAYERS);
     }
 
     /**
-     * Generate the player hands.
+     * Generate the players hands.
      */
     public void setHands() {
+        hands = initializeHands();
         for (int i = 0; i < NUM_PLAYERS; i++) {
-            Card[] hand = {deck.drawCard(), deck.drawCard()};
-            hands[(dealer + 1 + i) % NUM_PLAYERS] = new PlayerHand(players[(dealer + 1 + i) % NUM_PLAYERS], hand);
+            List<Card> hand = List.of(deck.drawCard(), deck.drawCard());
+            hands.set((dealer + 1 + i) % NUM_PLAYERS, new PlayerHand(players.get((dealer + 1 + i) % NUM_PLAYERS), hand));
         }
+    }
+
+    /**
+     * Initialize a null list of NUM_PLAYERS PlayerHand.
+     *
+     * @return the PlayerHand list
+     */
+    public List<PlayerHand> initializeHands() {
+        PlayerHand[] playerHands = new PlayerHand[NUM_PLAYERS];
+        Arrays.fill(playerHands, null);
+        return Arrays.asList(playerHands);
     }
 
     /**
      * Initialize the playerBet objects array.
      */
     public void setBets() {
+        bets = new ArrayList<>();
         for (int i = 0; i < NUM_PLAYERS; i++) {
             if (i == (dealer + 2) % NUM_PLAYERS)
-                bets[i] = new PlayerBet(players[i], true);
+                bets.add(new PlayerBet(players.get(i), true));
             else
-                bets[i] = new PlayerBet(players[i], false);
+                bets.add(new PlayerBet(players.get(i), false));
         }
     }
 
@@ -572,29 +569,29 @@ public class PokerGameController {
                 river();
             else {
                 System.out.println("SHOWDOWN!");
-                startGame(players[0]);
+                startGame(players.get(0));
             }
-        } else if (bets[index].isFolded()) {
+        } else if (bets.get(index).isFolded()) {
             bet((index + 1) % NUM_PLAYERS);
         } else {
             if (index == (dealer + 2) % NUM_PLAYERS && !bigBlindAction)
                 bigBlindAction = true;
-            bets[index].initializeBet();
+            bets.get(index).initializeBet();
             if (index == 0) {
                 setCanvasChoose();
                 userMove = true;
             } else {
-                if (bets[index].getBet() < maxBet()) {
+                if (bets.get(index).getBet() < maxBet()) {
                     if (randomGenerator.nextInt() % 2 == 0) {
-                        call(bets[index], maxBet());
+                        call(bets.get(index), maxBet());
                         System.out.println("CALL!");
                     } else {
-                        raise(bets[index], Math.max(maxRaise, BLIND));
+                        raise(bets.get(index), Math.max(maxRaise, BLIND));
                         System.out.println("RAISE!");
                     }
                 } else {
                     System.out.println("CHECK!");
-                    check(bets[index]);
+                    check(bets.get(index));
                 }
                 setPlayerLabel(index);
                 bet((index + 1) % NUM_PLAYERS);
@@ -694,7 +691,7 @@ public class PokerGameController {
         playerBet.getPlayer().setBalance(playerBet.getPlayer().getBalance() - bet);
         playerBet.addBet(bet);
         pot.addAmount(bet);
-        pot.addPlayerAmount(getPlayerBetIndex(playerBet), bet);
+        pot.addPlayerAmount(bets.indexOf(playerBet), bet);
         drawPlayerChips(playerBet);
     }
 
@@ -709,14 +706,14 @@ public class PokerGameController {
         boolean equals = true, first = true;
 
         for (int i = 0; i < NUM_PLAYERS; i++) {
-            if (!bets[i].isFolded()) {
+            if (!bets.get(i).isFolded()) {
                 count++;
                 if (first) {
-                    bet = bets[i].getBet();
+                    bet = bets.get(i).getBet();
                     if (bet < 0)
                         equals = false;
                     first = false;
-                } else if (bet != bets[i].getBet())
+                } else if (bet != bets.get(i).getBet())
                     equals = false;
             }
         }
@@ -736,8 +733,8 @@ public class PokerGameController {
     public long maxBet() {
         long max = 0;
         for (int i = 0; i < NUM_PLAYERS; i++) {
-            if (max < bets[i].getBet())
-                max = bets[i].getBet();
+            if (max < bets.get(i).getBet())
+                max = bets.get(i).getBet();
         }
         return max;
     }
@@ -753,7 +750,7 @@ public class PokerGameController {
 
             //Set the player into the controller.
             PokerLobbyController controller = loader.getController();
-            controller.setPlayer(players[0]);
+            controller.setPlayer(players.get(0));
 
             //Create the stage.
             Stage stage = (Stage) leaveTableButton.getScene().getWindow();

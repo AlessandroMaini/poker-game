@@ -1,5 +1,8 @@
 package com.pokergame;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * The community cards or the cards common to all the players.
  *
@@ -16,13 +19,13 @@ public class CommunityCards {
     public boolean flopShown;
     public boolean turnShown;
     public boolean riverShown;
-    Card[] communityCards;
+    List<Card> communityCards;
 
     /**
-     * Initialize the community cards with an empty array.
+     * Initialize the community cards with an empty list.
      */
     public CommunityCards() {
-        this.communityCards = new Card[5];
+        this.communityCards = new ArrayList<>();
         resetAll();
     }
 
@@ -35,24 +38,24 @@ public class CommunityCards {
         setRiverShown(false);
     }
 
-    public Card[] getCommunityCards() {
+    public List<Card> getCommunityCards() {
         return communityCards;
     }
 
     public Card getCommunityCardAt(int index) {
-        return communityCards[index];
+        return communityCards.get(index);
     }
 
-    public void setFlop(Card[] cards) {
-        System.arraycopy(cards, 0, communityCards, 0, FLOP);
+    public void setFlop(List<Card> cards) {
+        communityCards.addAll(cards);
     }
 
     public void setTurn(Card card) {
-        communityCards[TURN] = card;
+        communityCards.add(card);
     }
 
     public void setRiver(Card card) {
-        communityCards[RIVER] = card;
+        communityCards.add(card);
     }
 
     public void setFlopShown(boolean flopShown) {

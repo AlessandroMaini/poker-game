@@ -1,6 +1,8 @@
 package com.pokergame;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * The set of bets made in the game. With also the value of the bet for each player in an array.
@@ -10,7 +12,7 @@ import java.util.Arrays;
  */
 public class Pot {
     public long amount;
-    public long[] cumulativeBet;
+    public List<Long> cumulativeBet;
 
     /**
      * Initialize a new empty pot and an empty player's bets array.
@@ -19,8 +21,9 @@ public class Pot {
      */
     public Pot(int numPlayers) {
         amount = 0;
-        cumulativeBet = new long[numPlayers];
-        Arrays.fill(cumulativeBet, 0);
+        Long[] betArray = new Long[numPlayers];
+        Arrays.fill(betArray, 0L);
+        cumulativeBet = new ArrayList<>(Arrays.asList(betArray));
     }
 
     public long getAmount() {
@@ -36,10 +39,10 @@ public class Pot {
     }
 
     public long getPlayerAmount(int index) {
-        return cumulativeBet[index];
+        return cumulativeBet.get(index);
     }
 
     public void addPlayerAmount(int index, long value) {
-        cumulativeBet[index] += value;
+        cumulativeBet.set(index, cumulativeBet.get(index) + value);
     }
 }

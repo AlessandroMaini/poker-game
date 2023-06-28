@@ -1,5 +1,7 @@
 package com.pokergame;
 
+import java.util.List;
+
 /**
  * Associates each player to 2 cards (his hand).
  *
@@ -8,7 +10,7 @@ package com.pokergame;
  */
 public class PlayerHand {
     Player player;
-    Card[] cards;
+    List<Card> cards;
 
     /**
      * Initialize a new player hand.
@@ -16,7 +18,7 @@ public class PlayerHand {
      * @param player is the player object
      * @param cards are the 2 cards
      */
-    public PlayerHand(Player player, Card[] cards) {
+    public PlayerHand(Player player, List<Card> cards) {
         this.player = player;
         this.cards = cards;
     }
@@ -29,11 +31,11 @@ public class PlayerHand {
         this.player = player;
     }
 
-    public Card[] getCards() {
+    public List<Card> getCards() {
         return cards;
     }
 
-    public void setCards(Card[] cards) {
+    public void setCards(List<Card> cards) {
         this.cards = cards;
     }
 }
