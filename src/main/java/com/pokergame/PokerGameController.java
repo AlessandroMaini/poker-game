@@ -44,6 +44,7 @@ public class PokerGameController {
     final public static long BLIND = 20L;
     public Deck deck;
     public Pot pot;
+    public List<Pot> sidePots;
     public List<Player> players;
     public List<PlayerHand> hands;
     public List<PlayerBet> bets;
@@ -58,6 +59,7 @@ public class PokerGameController {
     public boolean firstGame;
     /** Determine if is the big blind turn */
     public boolean bigBlindAction;
+    public boolean sidePot;
     public RandomGenerator randomGenerator = RandomGenerator.getDefault();
     @FXML
     private Canvas canvasCommunity;
@@ -432,6 +434,8 @@ public class PokerGameController {
             deck = new Deck();
             deck.shuffle();
             pot = new Pot(NUM_PLAYERS);
+            sidePots = new ArrayList<>();
+            sidePot = false;
             bigBlindAction = false;
             userMove = false;
             clearCommunityCanvas();
@@ -441,19 +445,34 @@ public class PokerGameController {
                 setPlayers(player);
                 firstGame = false;
             }
-            setPlayersLabels();
-            setDealer();
-            drawDealer();
-            Text startText = new Text("-----NEW GAME STARTING-----\n");
-            startText.setFill(Color.BLACK);
-            startText.setFont(Font.font("System", FontWeight.BOLD, 14));
-            updateTextFlowNarrator(startText);
-            setBets();
-            setBlinds();
-            setHands();
-            drawPlayersHands();
-            bet((dealer + 3) % NUM_PLAYERS);
+            if (replacePlayers()) {
+                setPlayersLabels();
+                setDealer();
+                drawDealer();
+                Text startText = new Text("-----NEW GAME STARTING-----\n");
+                startText.setFill(Color.BLACK);
+                startText.setFont(Font.font("System", FontWeight.BOLD, 14));
+                updateTextFlowNarrator(startText);
+                setBets();
+                setBlinds();
+                setHands();
+                drawPlayersHands();
+                bet((dealer + 3) % NUM_PLAYERS);
+            }
         }
+    }
+
+    public boolean replacePlayers() {
+        for (int i = 0; i < NUM_PLAYERS; i++) {
+            if (players.get(i).getBalance() <= 0) {
+                if (i == 0) {
+                    returnToLobby();
+                    return false;
+                } else
+                    players.set(i, generateBot(players.get(0)));
+            }
+        }
+        return true;
     }
 
     /**
@@ -621,20 +640,38 @@ public class PokerGameController {
     }
 
     public void showdown() {
-        Player winner = players.get(0);
-        int points = 0;
+        int winner;
+        //        int points = 0;
+        List<Integer> points = new ArrayList<>();
         for (int i = 0; i < NUM_PLAYERS; i++) {
-            if (bets.get(i).isFolded())
+            if (bets.get(i).isFolded()) {
+                points.add(0);
                 continue;
+            }
             Hand hand = new Hand(getAllPlayerCards(hands.get(i)));
             getShowdownText(hand.getBestHand(), hands.get(i).getPlayer());
-            if (points < hand.getBestHand()) {
-                points = hand.getBestHand();
-                winner = hands.get(i).getPlayer();
+            points.add(hand.getBestHand());
+            //            if (points < hand.getBestHand()) {
+            //                points = hand.getBestHand();
+            //                winner = hands.get(i).getPlayer();
+            //            }
+        }
+        winner = points.indexOf(Collections.max(points));
+        handleVictory(players.get(winner), pot);
+        getVictoryText(players.get(winner), pot);
+        if (sidePot) {
+            for (Pot s : sidePots) {
+                List<Integer> sidePoints = new ArrayList<>();
+                for (int i = 0; i < NUM_PLAYERS; i++)
+                    if (s.getPlayerAmount(i) > 0)
+                        sidePoints.add(points.get(i));
+                    else
+                        sidePoints.add(0);
+                winner = sidePoints.indexOf(Collections.max(sidePoints));
+                handleVictory(players.get(winner), s);
+                getVictoryText(players.get(winner), s);
             }
         }
-        handleVictory(winner);
-        getVictoryText(winner);
     }
 
     public List<Card> getAllPlayerCards(PlayerHand playerHand) {
@@ -644,7 +681,7 @@ public class PokerGameController {
         return cardList;
     }
 
-    public void handleVictory(Player p) {
+    public void handleVictory(Player p, Pot pot) {
         p.setBalance(p.getBalance() + pot.getAmount());
     }
 
@@ -671,7 +708,7 @@ public class PokerGameController {
         };
     }
 
-    public void getVictoryText(Player p) {
+    public void getVictoryText(Player p, Pot pot) {
         String victoryString;
         victoryString = String.format("%s WINS %d!!\n", p.getUsername(), pot.getAmount());
         Text victoryText = new Text(victoryString);
@@ -711,7 +748,11 @@ public class PokerGameController {
             bet = Math.max(bet, 2 * BLIND);
         else
             bet = Math.max(bet, BLIND);
-        playerBets(playerBet, bet - playerBet.getBet());
+        if ((bet -= playerBet.getBet()) > playerBet.getPlayer().getBalance()) {
+            bet = playerBet.getPlayer().getBalance();
+            handleSidePots(bet);
+        }
+        playerBets(playerBet, bet);
         getActionText("CALL", playerBet.getPlayer().getUsername(), 0);
     }
 
@@ -723,7 +764,10 @@ public class PokerGameController {
      */
     public void raise(PlayerBet playerBet, long amount) {
         maxRaise = Math.max(amount, maxRaise);
-        amount = Math.min(playerBet.getPlayer().getBalance(), amount + (maxBet() - playerBet.getBet()));
+        if ((amount += maxBet() - playerBet.getBet()) > playerBet.getPlayer().getBalance()) {
+            amount = playerBet.getPlayer().getBalance();
+            handleSidePots(amount);
+        }
         playerBets(playerBet, amount);
         getActionText("RAISE", playerBet.getPlayer().getUsername(), maxBet());
     }
@@ -736,6 +780,19 @@ public class PokerGameController {
     public void fold(PlayerBet playerBet) {
         playerBet.setFolded(true);
         getActionText("FOLD", playerBet.getPlayer().getUsername(), 0);
+    }
+
+    public void handleSidePots(long amount) {
+        Pot sPot = new Pot(NUM_PLAYERS);
+        sidePot = true;
+        for (int i = 0; i < NUM_PLAYERS; i++) {
+            if (bets.get(i).getBet() > amount) {
+                sPot.addAmount(bets.get(i).getBet() - amount);
+                sPot.addPlayerAmount(i, bets.get(i).getBet() - amount);
+                bets.get(i).setBet(amount);
+            }
+        }
+        sidePots.add(sPot);
     }
 
     /**
@@ -783,12 +840,14 @@ public class PokerGameController {
      */
     public boolean stopBetting() {
         int count = 0;
+        int broke = 0;
         long bet = 0L;
         boolean equals = true, first = true;
-
         for (int i = 0; i < NUM_PLAYERS; i++) {
             if (!bets.get(i).isFolded()) {
                 count++;
+                if (players.get(i).getBalance() <= 0)
+                    broke++;
                 if (first) {
                     bet = bets.get(i).getBet();
                     if (bet < 0)
@@ -798,7 +857,7 @@ public class PokerGameController {
                     equals = false;
             }
         }
-        if (count == 1)
+        if (count == 1 || broke > 0)
             return true;
         //In the first round of bets the Big Blind can check, raise or fold.
         if (!communityCards.isFlopShown() && !bigBlindAction)
