@@ -9,7 +9,7 @@ package com.pokergame;
 public class Card {
     /** 0 = spades, 1 = hearts, 2 = clubs, 3 = diamonds */
     int suit;
-    /** 0 = two, ..., 9 = jack, 10 = queen, 11 = king, 12 = ace */
+    /** 2 = two, ..., 11 = jack, 12 = queen, 13 = king, 14 = ace */
     int value;
     String[] suitNames = {"spades", "hearts", "clubs", "diamonds"};
     String[] valueNames = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "jack", "queen", "king", "ace"};
@@ -46,7 +46,7 @@ public class Card {
     }
 
     public String getValueName() {
-        return valueNames[this.value];
+        return valueNames[this.value - 2];
     }
 
     @Override

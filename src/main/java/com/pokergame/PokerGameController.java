@@ -264,6 +264,7 @@ public class PokerGameController {
         graphicsContext.drawImage(card1, 0, 0, CARD_WIDTH, CARD_HEIGHT);
         graphicsContext.drawImage(card2, 120, 0, CARD_WIDTH, CARD_HEIGHT);
         graphicsContext.drawImage(card3, 240, 0, CARD_WIDTH, CARD_HEIGHT);
+        setCanvasBestHand();
     }
 
     /**
@@ -273,6 +274,8 @@ public class PokerGameController {
         GraphicsContext graphicsContext = canvasCommunity.getGraphicsContext2D();
         Image card = getImageCard(communityCards.getCommunityCardAt(communityCards.TURN));
         graphicsContext.drawImage(card, 360, 0, CARD_WIDTH, CARD_HEIGHT);
+        clearCanvasBestHand();
+        setCanvasBestHand();
     }
 
     /**
@@ -282,6 +285,8 @@ public class PokerGameController {
         GraphicsContext graphicsContext = canvasCommunity.getGraphicsContext2D();
         Image card = getImageCard(communityCards.getCommunityCardAt(communityCards.RIVER));
         graphicsContext.drawImage(card, 480, 0, CARD_WIDTH, CARD_HEIGHT);
+        clearCanvasBestHand();
+        setCanvasBestHand();
     }
 
     /**
@@ -401,6 +406,20 @@ public class PokerGameController {
         canvasCommunity.getGraphicsContext2D().clearRect(0, 0, 580, CARD_HEIGHT);
     }
 
+    void setCanvasBestHand() {
+        GraphicsContext graphicsContext = canvasChoose.getGraphicsContext2D();
+        graphicsContext.setFill(Color.WHITE);
+        graphicsContext.setFont(Font.font("System", FontWeight.BOLD, 14));
+        Hand hand = new Hand(getAllPlayerCards(hands.get(0)));
+        String userBestHand = String.format("You have %s", getHandString(hand.getBestHand()));
+        graphicsContext.fillText(userBestHand, 0, 100);
+    }
+
+    void clearCanvasBestHand() {
+        GraphicsContext graphicsContext = canvasChoose.getGraphicsContext2D();
+        graphicsContext.clearRect(0, 40, 217, 120);
+    }
+
     /**
      * Starts a poker game.
      *
@@ -416,6 +435,7 @@ public class PokerGameController {
             bigBlindAction = false;
             userMove = false;
             clearCommunityCanvas();
+            clearCanvasBestHand();
             clearChips();
             if (firstGame) {
                 setPlayers(player);
@@ -569,6 +589,7 @@ public class PokerGameController {
                 river();
             else {
                 System.out.println("SHOWDOWN!");
+                showdown();
                 startGame(players.get(0));
             }
         } else if (bets.get(index).isFolded()) {
@@ -597,6 +618,66 @@ public class PokerGameController {
                 bet((index + 1) % NUM_PLAYERS);
             }
         }
+    }
+
+    public void showdown() {
+        Player winner = players.get(0);
+        int points = 0;
+        for (int i = 0; i < NUM_PLAYERS; i++) {
+            if (bets.get(i).isFolded())
+                continue;
+            Hand hand = new Hand(getAllPlayerCards(hands.get(i)));
+            getShowdownText(hand.getBestHand(), hands.get(i).getPlayer());
+            if (points < hand.getBestHand()) {
+                points = hand.getBestHand();
+                winner = hands.get(i).getPlayer();
+            }
+        }
+        handleVictory(winner);
+        getVictoryText(winner);
+    }
+
+    public List<Card> getAllPlayerCards(PlayerHand playerHand) {
+        List<Card> cardList = new ArrayList<>();
+        cardList.addAll(playerHand.getCards());
+        cardList.addAll(communityCards.getCommunityCards());
+        return cardList;
+    }
+
+    public void handleVictory(Player p) {
+        p.setBalance(p.getBalance() + pot.getAmount());
+    }
+
+    public void getShowdownText(int points, Player p) {
+        String showdownString;
+        showdownString = String.format("%s has %s\n", p.getUsername(), getHandString(points));
+        Text showdownText = new Text(showdownString);
+        showdownText.setFont(Font.font(14));
+        showdownText.setFill(Color.BLACK);
+        updateTextFlowNarrator(showdownText);
+    }
+
+    public String getHandString(int points) {
+        return switch (points / 1000000) {
+            case 1 -> "ONE PAIR";
+            case 2 -> "TWO PAIRS";
+            case 3 -> "THREE OF A KIND";
+            case 4 -> "STRAIGHT";
+            case 5 -> "FLUSH";
+            case 6 -> "FULL HOUSE";
+            case 7 -> "FOUR OF A KIND";
+            case 8 -> "STRAIGHT FLUSH";
+            default -> "HIGH CARD";
+        };
+    }
+
+    public void getVictoryText(Player p) {
+        String victoryString;
+        victoryString = String.format("%s WINS %d!!\n", p.getUsername(), pot.getAmount());
+        Text victoryText = new Text(victoryString);
+        victoryText.setFill(Color.GREEN);
+        victoryText.setFont(Font.font("System", FontWeight.BOLD, 14));
+        updateTextFlowNarrator(victoryText);
     }
 
     /**

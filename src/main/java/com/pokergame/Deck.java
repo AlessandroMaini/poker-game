@@ -19,7 +19,7 @@ public class Deck {
     public Deck() {
         this.cards = new ArrayList<>();
         for (int i = 0; i < 52; i++) {
-            Card card = new Card(i / 13, i % 13);
+            Card card = new Card(i / 13, (i % 13) + 2);
             this.cards.add(card);
         }
     }

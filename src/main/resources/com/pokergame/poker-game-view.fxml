@@ -22,26 +22,6 @@
       <Canvas fx:id="canvasPlayer1" height="245.0" layoutX="14.0" layoutY="278.0" width="220.0" AnchorPane.bottomAnchor="277.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="966.0" AnchorPane.topAnchor="278.0" />
       <Canvas fx:id="canvasPlayer2" height="245.0" layoutX="490.0" layoutY="14.0" width="220.0" AnchorPane.bottomAnchor="541.0" AnchorPane.leftAnchor="490.0" AnchorPane.rightAnchor="490.0" AnchorPane.topAnchor="14.0" />
       <Canvas fx:id="canvasPlayer3" height="245.0" layoutX="966.0" layoutY="278.0" width="220.0" AnchorPane.bottomAnchor="277.0" AnchorPane.leftAnchor="966.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="278.0" />
-      <ToolBar layoutX="782.0" layoutY="664.0" AnchorPane.bottomAnchor="96.0" AnchorPane.leftAnchor="782.0" AnchorPane.rightAnchor="201.0" AnchorPane.topAnchor="664.0">
-         <items>
-            <Button mnemonicParsing="false" onAction="#handleCall" text="Call">
-               <font>
-                  <Font size="14.0" />
-               </font></Button>
-            <Button mnemonicParsing="false" onAction="#handleFold" text="Fold">
-               <font>
-                  <Font size="14.0" />
-               </font></Button>
-            <Button mnemonicParsing="false" onAction="#handleRaise" text="Raise">
-               <font>
-                  <Font size="14.0" />
-               </font></Button>
-            <Button mnemonicParsing="false" onAction="#handleCheck" text="Check">
-               <font>
-                  <Font size="14.0" />
-               </font></Button>
-         </items>
-      </ToolBar>
       <Canvas fx:id="canvasCommunity" height="145.0" layoutX="310.0" layoutY="328.0" width="580.0" AnchorPane.bottomAnchor="327.0" AnchorPane.leftAnchor="310.0" AnchorPane.rightAnchor="310.0" AnchorPane.topAnchor="328.0" />
       <Label layoutX="506.0" layoutY="575.0" text="Username" textFill="WHITE" AnchorPane.bottomAnchor="239.0" AnchorPane.leftAnchor="490.0" AnchorPane.rightAnchor="644.0" AnchorPane.topAnchor="541.0">
          <font>
@@ -96,12 +76,32 @@
       <Canvas fx:id="canvasBet3" height="120.0" layoutX="390.0" layoutY="328.0" width="220.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="523.0" />
       <Canvas fx:id="canvasBet0" height="120.0" layoutX="24.0" layoutY="533.0" width="220.0" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="250.0" />
       <Canvas fx:id="canvasBet2" height="120.0" layoutX="243.0" layoutY="87.0" width="220.0" AnchorPane.bottomAnchor="541.0" AnchorPane.leftAnchor="250.0" />
-      <Canvas fx:id="canvasChoose" height="40.0" layoutX="782.0" layoutY="614.0" width="217.0" AnchorPane.bottomAnchor="136.0" AnchorPane.leftAnchor="782.0" />
+      <Canvas fx:id="canvasChoose" height="120.0" layoutX="782.0" layoutY="614.0" width="217.0" AnchorPane.bottomAnchor="56.0" AnchorPane.leftAnchor="782.0" />
       <ImageView fitHeight="270.0" fitWidth="340.0" layoutX="791.0" layoutY="24.0" pickOnBounds="true" preserveRatio="true" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <image>
             <Image url="@frame.jpg" />
          </image>
       </ImageView>
       <TextFlow fx:id="textFlowNarrator" layoutX="890.0" layoutY="12.0" prefHeight="230.0" prefWidth="300.0" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="20.0" />
+      <ToolBar layoutX="782.0" layoutY="664.0" AnchorPane.bottomAnchor="96.0" AnchorPane.leftAnchor="782.0" AnchorPane.rightAnchor="201.0" AnchorPane.topAnchor="664.0">
+         <items>
+            <Button mnemonicParsing="false" onAction="#handleCall" text="Call">
+               <font>
+                  <Font size="14.0" />
+               </font></Button>
+            <Button mnemonicParsing="false" onAction="#handleFold" text="Fold">
+               <font>
+                  <Font size="14.0" />
+               </font></Button>
+            <Button mnemonicParsing="false" onAction="#handleRaise" text="Raise">
+               <font>
+                  <Font size="14.0" />
+               </font></Button>
+            <Button mnemonicParsing="false" onAction="#handleCheck" text="Check">
+               <font>
+                  <Font size="14.0" />
+               </font></Button>
+         </items>
+      </ToolBar>
    </children>
 </AnchorPane>
