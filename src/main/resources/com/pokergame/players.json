@@ -2,9 +2,12 @@
   "username" : "primo",
   "balance" : 384325
 }, {
-  "username" : "ciao",
-  "balance" : 393240
-}, {
   "username" : "alle",
   "balance" : 252083
+}, {
+  "username" : "gio",
+  "balance" : 92420
+}, {
+  "username" : "ciao",
+  "balance" : 100220
 } ]

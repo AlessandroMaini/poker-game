@@ -28,6 +28,7 @@ public class PokerLoginController {
     private TextField username;
     @FXML
     private Button loginButton;
+
     Player player = new Player();
 
     /**
