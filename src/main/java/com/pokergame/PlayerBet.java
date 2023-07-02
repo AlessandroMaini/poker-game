@@ -47,10 +47,6 @@ public class PlayerBet {
         return player;
     }
 
-    public void setPlayer(Player player) {
-        this.player = player;
-    }
-
     public void addBet(long value) {
         this.bet += value;
     }

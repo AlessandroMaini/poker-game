@@ -30,10 +30,6 @@ public class Pot {
         return amount;
     }
 
-    public void setAmount(long amount) {
-        this.amount = amount;
-    }
-
     public void addAmount(long value) {
         this.amount += value;
     }

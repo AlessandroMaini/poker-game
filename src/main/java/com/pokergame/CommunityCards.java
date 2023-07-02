@@ -10,12 +10,10 @@ import java.util.List;
  * @version 2023.06.28
  */
 public class CommunityCards {
-    /** Number of flop cards */
-    final public int FLOP = 3;
     /** Index of the turn card */
-    final public int TURN = 3;
+    final public static int TURN = 3;
     /** Index of the river card */
-    final public int RIVER = 4;
+    final public static int RIVER = 4;
     public boolean flopShown;
     public boolean turnShown;
     public boolean riverShown;
@@ -70,8 +68,8 @@ public class CommunityCards {
         this.riverShown = riverShown;
     }
 
-    public boolean isFlopShown() {
-        return flopShown;
+    public boolean isNotFlopShown() {
+        return !flopShown;
     }
 
     public boolean isTurnShown() {

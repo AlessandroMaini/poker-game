@@ -29,7 +29,7 @@ public class PokerRaiseController {
      * @param minRaise the minimal raise allowed
      */
     public void setSlider(double minRaise) {
-        baseValue = minRaise == 0 ? PokerGameController.BLIND : minRaise;
+        baseValue = minRaise == 0 ? GameLogic.BLIND : minRaise;
         sliderRaise.setMax(baseValue * 10);
         sliderRaise.setMin(baseValue);
         sliderRaise.setMajorTickUnit(baseValue * 3);

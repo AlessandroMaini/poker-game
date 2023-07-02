@@ -29,16 +29,8 @@ public class Card {
         return suit;
     }
 
-    public void setSuit(int suit) {
-        this.suit = suit;
-    }
-
     public int getValue() {
         return value;
-    }
-
-    public void setValue(int value) {
-        this.value = value;
     }
 
     public String getSuitName() {

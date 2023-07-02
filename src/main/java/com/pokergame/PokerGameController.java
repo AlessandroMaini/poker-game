@@ -24,7 +24,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
-import java.util.random.RandomGenerator;
 
 /**
  * Game view controller.
@@ -42,38 +41,18 @@ public class PokerGameController {
     final public String IMAGE_DEALER = "./src/main/resources/com/pokergame/dealer.png";
     /** Path to the chip images directory */
     final public String IMAGE_CHIPS_DIRECTORY = "./src/main/resources/com/pokergame/chips";
-    /** Number of players at the table */
-    final public int NUM_PLAYERS = 4;
-    /** Value of the blind, the minimal bet */
-    final public static long BLIND = 20L;
-    public Deck deck;
-    public Pot pot;
-    public List<Pot> sidePots;
-    public List<Player> players;
-    public List<PlayerHand> hands;
-    public List<PlayerBet> bets;
-    public CommunityCards communityCards;
-    /** Dealer index in the players array */
-    public int dealer;
-    /** Determine if is the user turn */
-    public boolean userMove;
-    /** Determine the current maximal raise */
-    public long maxRaise;
     /** Determine if it is the first game at the table, to initialize the bot players */
     public boolean firstGame;
-    /** Determine if is the big blind turn */
-    public boolean bigBlindAction;
-    /** Determine if there are side pots */
-    public boolean sidePot;
-    /** Determine if one player has a void balance */
-    public boolean brokePlayer;
-    public RandomGenerator randomGenerator = RandomGenerator.getDefault();
+    /** Determine if is the user turn */
+    public boolean userMove;
     /** Determine if the game is waiting for the user to click on the next arrow */
     public boolean waitingForNext;
     /** Index of the next player to bet */
     public int nextBetIndex;
     /** Determine if a new game have to start */
     public boolean startNewGame;
+    /** Manages the running of the game */
+    public GameLogic game;
     @FXML
     private Canvas canvasCommunity;
 
@@ -133,7 +112,6 @@ public class PokerGameController {
     public void initialize() {
         firstGame = true;
         waitingForNext = false;
-        dealer = -1;
         canvasListPlayers = Arrays.asList(canvasPlayer0, canvasPlayer1, canvasPlayer2, canvasPlayer3);
         canvasListDealer = Arrays.asList(canvasDealer0, canvasDealer1, canvasDealer2, canvasDealer3);
         canvasListChips = Arrays.asList(canvasBet0, canvasBet1, canvasBet2, canvasBet3);
@@ -147,7 +125,7 @@ public class PokerGameController {
         if (waitingForNext) {
             waitingForNext = false;
             if (startNewGame)
-                startGame(players.get(0));
+                startGame(game.getPlayerAt(0));
             else
                 bet(nextBetIndex);
         }
@@ -159,7 +137,7 @@ public class PokerGameController {
     @FXML
     void handleCall() {
         if (userMove) {
-            call(bets.get(0), maxBet());
+            getActionText(game.call(game.getBetAt(0), game.maxBet()), game.getPlayerAt(0), game.maxBet());
             userMove = false;
             setPlayerLabel(0);
             clearCanvasChoose();
@@ -173,8 +151,8 @@ public class PokerGameController {
      */
     @FXML
     void handleCheck() {
-        if (userMove && (bets.get(0).getBet() == maxBet())) {
-            check(bets.get(0));
+        if (userMove && (game.getBetAt(0).getBet() == game.maxBet())) {
+            getActionText(game.check(game.getBetAt(0)), game.getPlayerAt(0), game.maxBet());
             userMove = false;
             setPlayerLabel(0);
             clearCanvasChoose();
@@ -189,7 +167,7 @@ public class PokerGameController {
     @FXML
     void handleFold() {
         if (userMove) {
-            fold(bets.get(0));
+            getActionText(game.fold(game.getBetAt(0)), game.getPlayerAt(0), game.maxBet());
             userMove = false;
             setPlayerLabel(0);
             clearCanvasChoose();
@@ -203,7 +181,7 @@ public class PokerGameController {
      */
     @FXML
     void handleRaise() {
-        if (userMove && !brokePlayer && players.get(0).getBalance() > (maxBet() - bets.get(0).getBet())) {
+        if (userMove && game.isNotBrokePlayer() && game.getPlayerAt(0).getBalance() > (game.maxBet() - game.getBetAt(0).getBet())) {
             try {
                 FXMLLoader loader = new FXMLLoader();
                 loader.setLocation(getClass().getResource("poker-raise-view.fxml"));
@@ -211,7 +189,7 @@ public class PokerGameController {
 
                 //Set the player into the dialog.
                 PokerRaiseController controller = loader.getController();
-                controller.setSlider(maxRaise);
+                controller.setSlider(game.getMaxRaise());
 
                 // Create the dialog
                 Dialog<ButtonType> dialog = new Dialog<>();
@@ -222,7 +200,7 @@ public class PokerGameController {
                 // Show the dialog and wait until the user closes it
                 Optional<ButtonType> clickedButton = dialog.showAndWait();
                 if (clickedButton.orElse(ButtonType.CANCEL) == ButtonType.OK) {
-                    raise(bets.get(0), controller.getRaise());
+                    getActionText(game.raise(game.getBetAt(0), controller.getRaise()), game.getPlayerAt(0), game.maxBet());
                     userMove = false;
                     setPlayerLabel(0);
                     clearCanvasChoose();
@@ -240,8 +218,9 @@ public class PokerGameController {
      */
     @FXML
     void handleAllIn() {
-        if (userMove && (!brokePlayer || players.get(0).getBalance() <= (maxBet() - bets.get(0).getBet()))) {
-            allIn(bets.get(0));
+        if (userMove && (game.isNotBrokePlayer() || game.getPlayerAt(0).getBalance() <= (game.maxBet() - game.getBetAt(0).getBet()))) {
+            getActionText(game.allIn(game.getBetAt(0)), game.getPlayerAt(0), game.maxBet());
+
             userMove = false;
             setPlayerLabel(0);
             clearCanvasChoose();
@@ -251,7 +230,7 @@ public class PokerGameController {
     }
 
     void setPlayersLabels() {
-        for (int i = 0; i < NUM_PLAYERS; ++i) {
+        for (int i = 0; i < GameLogic.NUM_PLAYERS; ++i) {
             setPlayerLabel(i);
         }
     }
@@ -267,19 +246,19 @@ public class PokerGameController {
         graphicsContext.fillRect(0, 25, 220, 20);
         graphicsContext.setStroke(Color.WHITE);
         graphicsContext.setFont(Font.font(14));
-        graphicsContext.strokeText(players.get(index).getUsername(), 0, 40);
-        graphicsContext.strokeText(Long.toString(players.get(index).getBalance()), 120, 40);
+        graphicsContext.strokeText(game.getPlayerAt(index).getUsername(), 0, 40);
+        graphicsContext.strokeText(Long.toString(game.getPlayerAt(index).getBalance()), 120, 40);
     }
 
     /**
      * Draws the players hand cards.
      */
     void drawPlayersHands(boolean showdown) {
-        for (int i = 0; i < NUM_PLAYERS; i++) {
+        for (int i = 0; i < GameLogic.NUM_PLAYERS; i++) {
             GraphicsContext graphicsContext = canvasListPlayers.get(i).getGraphicsContext2D();
-            List<Card> hand = hands.get(i).getCards();
-            Image card1 = getImageCard(hand.get(0), i == 0 || showdown, bets.get(i).isFolded());
-            Image card2 = getImageCard(hand.get(1), i == 0 || showdown, bets.get(i).isFolded());
+            List<Card> hand = game.getHandAt(i).getCards();
+            Image card1 = getImageCard(hand.get(0), i == 0 || showdown, game.getBetAt(i).isFolded());
+            Image card2 = getImageCard(hand.get(1), i == 0 || showdown, game.getBetAt(i).isFolded());
             graphicsContext.drawImage(card1, 0, 80, CARD_WIDTH, CARD_HEIGHT);
             graphicsContext.drawImage(card2, 120, 80, CARD_WIDTH, CARD_HEIGHT);
         }
@@ -313,9 +292,9 @@ public class PokerGameController {
      */
     void drawFlop() {
         GraphicsContext graphicsContext = canvasCommunity.getGraphicsContext2D();
-        Image card1 = getImageCard(communityCards.getCommunityCardAt(0), true, false);
-        Image card2 = getImageCard(communityCards.getCommunityCardAt(1), true, false);
-        Image card3 = getImageCard(communityCards.getCommunityCardAt(2), true, false);
+        Image card1 = getImageCard(game.getCommunityCards().getCommunityCardAt(0), true, false);
+        Image card2 = getImageCard(game.getCommunityCards().getCommunityCardAt(1), true, false);
+        Image card3 = getImageCard(game.getCommunityCards().getCommunityCardAt(2), true, false);
         graphicsContext.drawImage(card1, 0, 0, CARD_WIDTH, CARD_HEIGHT);
         graphicsContext.drawImage(card2, 120, 0, CARD_WIDTH, CARD_HEIGHT);
         graphicsContext.drawImage(card3, 240, 0, CARD_WIDTH, CARD_HEIGHT);
@@ -328,7 +307,7 @@ public class PokerGameController {
      */
     void drawTurn() {
         GraphicsContext graphicsContext = canvasCommunity.getGraphicsContext2D();
-        Image card = getImageCard(communityCards.getCommunityCardAt(communityCards.TURN), true, false);
+        Image card = getImageCard(game.getCommunityCards().getCommunityCardAt(CommunityCards.TURN), true, false);
         graphicsContext.drawImage(card, 360, 0, CARD_WIDTH, CARD_HEIGHT);
         clearCanvasBestHand();
         setCanvasBestHand();
@@ -340,7 +319,7 @@ public class PokerGameController {
      */
     void drawRiver() {
         GraphicsContext graphicsContext = canvasCommunity.getGraphicsContext2D();
-        Image card = getImageCard(communityCards.getCommunityCardAt(communityCards.RIVER), true, false);
+        Image card = getImageCard(game.getCommunityCards().getCommunityCardAt(CommunityCards.RIVER), true, false);
         graphicsContext.drawImage(card, 480, 0, CARD_WIDTH, CARD_HEIGHT);
         clearCanvasBestHand();
         setCanvasBestHand();
@@ -351,9 +330,9 @@ public class PokerGameController {
      * Draws the dealer icon.
      */
     void drawDealer() {
-        for (int i = 0; i < NUM_PLAYERS; i++) {
+        for (int i = 0; i < GameLogic.NUM_PLAYERS; i++) {
             GraphicsContext graphicsContext = canvasListDealer.get(i).getGraphicsContext2D();
-            if (i == dealer) {
+            if (i == game.getDealer()) {
                 try {
                     graphicsContext.drawImage(new Image(new FileInputStream(IMAGE_DEALER)), 0, 0, 75, 75);
                 } catch (FileNotFoundException e) {
@@ -367,13 +346,13 @@ public class PokerGameController {
     /**
      * Draws the player bet with chips.
      *
-     * @param playerBet the player whose bet you want to draw
+     * @param player the player whose bet you want to draw
      */
-    void drawPlayerChips(PlayerBet playerBet) {
-        int index = bets.indexOf(playerBet);
+    void drawPlayerChips(Player player) {
+        int index = game.getPlayers().indexOf(player);
         GraphicsContext graphicsContext = canvasListChips.get(index).getGraphicsContext2D();
         graphicsContext.clearRect(0, 0, 220, 120);
-        String betString = String.format("Bet: %d", pot.getPlayerAmount(index));
+        String betString = String.format("Bet: %d", game.getPot().getPlayerAmount(index));
         graphicsContext.setTextAlign(TextAlignment.RIGHT);
         graphicsContext.setFill(Color.WHITE);
         graphicsContext.setFont(Font.font(14));
@@ -382,7 +361,7 @@ public class PokerGameController {
         final int CHIP_COLORS = 7;
         int[] chips = new int[CHIP_COLORS];
         Arrays.fill(chips, 0);
-        getPlayerChips(pot.getPlayerAmount(index), chips);
+        getPlayerChips(game.getPot().getPlayerAmount(index), chips);
         int chipCounter = 0;
         for (int i = 0; i < CHIP_COLORS; i++) {
             String path = String.format("%s/%d-chip.png", IMAGE_CHIPS_DIRECTORY, i);
@@ -433,8 +412,8 @@ public class PokerGameController {
         GraphicsContext graphicsContext = canvasChoose.getGraphicsContext2D();
         graphicsContext.setFill(Color.WHITE);
         graphicsContext.setFont(Font.font(14));
-        if (bets.get(0).getBet() != maxBet()) {
-            String callString = String.format("You have to call %d", maxBet() - bets.get(0).getBet());
+        if (game.getBetAt(0).getBet() != game.maxBet()) {
+            String callString = String.format("You have to call %d", game.maxBet() - game.getBetAt(0).getBet());
             graphicsContext.fillText(callString, 0, 10);
         }
         graphicsContext.fillText("Choose your action:", 0, 30);
@@ -460,7 +439,6 @@ public class PokerGameController {
      * Creates a new community cards object and clears the community cards shown on the screen.
      */
     void clearCommunityCanvas() {
-        communityCards = new CommunityCards();
         canvasCommunity.getGraphicsContext2D().clearRect(0, 0, 580, CARD_HEIGHT);
     }
 
@@ -471,7 +449,7 @@ public class PokerGameController {
         GraphicsContext graphicsContext = canvasChoose.getGraphicsContext2D();
         graphicsContext.setFill(Color.WHITE);
         graphicsContext.setFont(Font.font("System", FontWeight.BOLD, 14));
-        Hand hand = new Hand(getAllPlayerCards(hands.get(0)));
+        Hand hand = new Hand(game.getAllPlayerCards(game.getHandAt(0)));
         String userBestHand = String.format("You have %s", getHandString(hand.getBestHand()));
         graphicsContext.fillText(userBestHand, 0, 100);
     }
@@ -490,170 +468,26 @@ public class PokerGameController {
         if (leaveTableButton.isSelected())
             returnToLobby();
         else {
-            deck = new Deck();
-            deck.shuffle();
-            pot = new Pot(NUM_PLAYERS);
-            sidePots = new ArrayList<>();
-            sidePot = false;
-            brokePlayer = false;
-            bigBlindAction = false;
+            if (firstGame) {
+                game = new GameLogic(player);
+                firstGame = false;
+            }
             userMove = false;
-            maxRaise = 0L;
             clearCommunityCanvas();
             clearCanvasBestHand();
             clearChips();
-            if (firstGame) {
-                setPlayers(player);
-                firstGame = false;
-            }
-            if (replacePlayers()) {
+            if (game.initialize()) {
                 setPlayersLabels();
-                setDealer();
                 drawDealer();
+                drawPlayerChips(game.getPlayerAt((game.getDealer() + 1) % GameLogic.NUM_PLAYERS));
+                drawPlayerChips(game.getPlayerAt((game.getDealer() + 2) % GameLogic.NUM_PLAYERS));
                 getPhaseText("-----NEW GAME STARTING-----");
-                setBets();
-                setBlinds();
-                setHands();
                 drawPlayersHands(false);
+                nextBetIndex = (game.getDealer() + 3) % GameLogic.NUM_PLAYERS;
                 startNewGame = false;
-                nextBetIndex = (dealer + 3) % NUM_PLAYERS;
                 waitingForNext = true;
             } else
                 returnToLobby();
-        }
-    }
-
-    /**
-     * Replaces the players with a void balance.
-     *
-     * @return false if the user has a void balance, otherwise true
-     */
-    public boolean replacePlayers() {
-        for (int i = 0; i < NUM_PLAYERS; i++) {
-            if (players.get(i).getBalance() <= 0) {
-                if (i == 0)
-                    return false;
-                else
-                    players.set(i, generateBot(players.get(0)));
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Generate the flop.
-     */
-    public void flop() {
-        communityCards.setFlopShown(true);
-        deck.drawCard();
-        List<Card> cards = List.of(deck.drawCard(), deck.drawCard(), deck.drawCard());
-        communityCards.setFlop(cards);
-        drawFlop();
-        waitingForNext = true;
-        nextBetIndex = (dealer + 3) % NUM_PLAYERS;
-    }
-
-    /**
-     * Generate the turn.
-     */
-    public void turn() {
-        communityCards.setTurnShown(true);
-        deck.drawCard();
-        communityCards.setTurn(deck.drawCard());
-        drawTurn();
-        waitingForNext = true;
-        nextBetIndex = (dealer + 3) % NUM_PLAYERS;
-    }
-
-    /**
-     * Generate the river.
-     */
-    public void river() {
-        communityCards.setRiverShown(true);
-        deck.drawCard();
-        communityCards.setRiver(deck.drawCard());
-        drawRiver();
-        waitingForNext = true;
-        nextBetIndex = (dealer + 3) % NUM_PLAYERS;
-    }
-
-    /**
-     * Decide the dealer position.
-     */
-    public void setDealer() {
-        dealer = (dealer + 1) % NUM_PLAYERS;
-    }
-
-    /**
-     * Generate the players list, with the user's player and bots.
-     *
-     * @param player the user's player
-     */
-    public void setPlayers(Player player) {
-        players = new ArrayList<>();
-        players.add(player);
-        for (int i = 1; i < NUM_PLAYERS; i++)
-            players.add(generateBot(player));
-    }
-
-    /**
-     * Generate a bot player.
-     *
-     * @param player the user's player
-     *
-     * @return the bot player
-     */
-    public Player generateBot(Player player) {
-        Player p = new Player();
-        p.setBalance(randomGenerator.nextLong((long) (player.getBalance() - (player.getBalance() * 0.5)), (long) (player.getBalance() + (player.getBalance() * 0.5))));
-        p.setUsername(String.format("Bot%d", randomGenerator.nextInt(1, 1000)));
-        return p;
-    }
-
-    /**
-     * Sets the blind bets.
-     */
-    public void setBlinds() {
-        bets.get((dealer + 1) % NUM_PLAYERS).initializeBet();
-        bets.get((dealer + 2) % NUM_PLAYERS).initializeBet();
-        playerBets(bets.get((dealer + 1) % NUM_PLAYERS), BLIND / 2);
-        playerBets(bets.get((dealer + 2) % NUM_PLAYERS), BLIND);
-        setPlayerLabel((dealer + 1) % NUM_PLAYERS);
-        setPlayerLabel((dealer + 2) % NUM_PLAYERS);
-    }
-
-    /**
-     * Generate the players hands.
-     */
-    public void setHands() {
-        hands = initializeHands();
-        for (int i = 0; i < NUM_PLAYERS; i++) {
-            List<Card> hand = List.of(deck.drawCard(), deck.drawCard());
-            hands.set((dealer + 1 + i) % NUM_PLAYERS, new PlayerHand(players.get((dealer + 1 + i) % NUM_PLAYERS), hand));
-        }
-    }
-
-    /**
-     * Initialize a null list of NUM_PLAYERS PlayerHand.
-     *
-     * @return the PlayerHand list
-     */
-    public List<PlayerHand> initializeHands() {
-        PlayerHand[] playerHands = new PlayerHand[NUM_PLAYERS];
-        Arrays.fill(playerHands, null);
-        return Arrays.asList(playerHands);
-    }
-
-    /**
-     * Initialize the playerBet objects list.
-     */
-    public void setBets() {
-        bets = new ArrayList<>();
-        for (int i = 0; i < NUM_PLAYERS; i++) {
-            if (i == (dealer + 2) % NUM_PLAYERS)
-                bets.add(new PlayerBet(players.get(i), true));
-            else
-                bets.add(new PlayerBet(players.get(i), false));
         }
     }
 
@@ -663,229 +497,87 @@ public class PokerGameController {
      * @param index the index of the player
      */
     public void bet(int index) {
-        if (stopBetting()) {
-            if (!brokePlayer)
-                resetBets();
-            if (!communityCards.isFlopShown())
-                flop();
-            else if (!communityCards.isTurnShown())
-                turn();
-            else if (!communityCards.isRiverShown())
-                river();
-            else {
+        if (game.stopBetting()) {
+            if (game.isNotBrokePlayer())
+                game.resetBets();
+            waitingForNext = true;
+            nextBetIndex = (game.getDealer() + 3) % GameLogic.NUM_PLAYERS;
+            if (game.getCommunityCards().isNotFlopShown()) {
+                game.flop();
+                drawFlop();
+            } else if (!game.getCommunityCards().isTurnShown()) {
+                game.turn();
+                drawTurn();
+            } else if (!game.getCommunityCards().isRiverShown()) {
+                game.river();
+                drawRiver();
+            } else {
                 showdown();
-                waitingForNext = true;
                 startNewGame = true;
             }
-        } else if (bets.get(index).isFolded()) {
-            bet((index + 1) % NUM_PLAYERS);
+        } else if (game.getBetAt(index).isFolded()) {
+            bet((index + 1) % GameLogic.NUM_PLAYERS);
         } else {
-            if (index == (dealer + 2) % NUM_PLAYERS && !bigBlindAction)
-                bigBlindAction = true;
-            bets.get(index).initializeBet();
+            game.initBet(index);
             if (index == 0) {
                 setCanvasChoose();
                 userMove = true;
             } else {
-                if (bets.get(index).getBet() < maxBet()) {
-                    if (randomGenerator.nextInt() % 2 == 0 || brokePlayer || players.get(index).getBalance() <= (maxBet() - bets.get(index).getBet()))
-                        call(bets.get(index), maxBet());
-                    else if (randomGenerator.nextInt() % 3 == 0)
-                        raise(bets.get(index), Math.max(maxRaise, BLIND));
-                    else
-                        fold(bets.get(index));
-                } else
-                    check(bets.get(index));
+                getActionText(game.botBet(index), game.getPlayerAt(index), game.maxBet());
                 setPlayerLabel(index);
                 waitingForNext = true;
-                nextBetIndex = (index + 1) % NUM_PLAYERS;
+                nextBetIndex = (index + 1) % GameLogic.NUM_PLAYERS;
             }
-        }
-    }
-
-    /**
-     * Determine the winners of the pot and updates their balances.
-     *
-     * @param points the score of the player's hands
-     * @param pot the pot considered
-     */
-    public void getPotWinners(List<Integer> points, Pot pot) {
-        List<Integer> potPoints = new ArrayList<>();
-        List<Player> winners = new ArrayList<>();
-        for (int i = 0; i < NUM_PLAYERS; i++)
-            if (pot.getPlayerAmount(i) > 0)
-                potPoints.add(points.get(i));
-            else
-                potPoints.add(0);
-        for (int i = 0; i < NUM_PLAYERS; i++)
-            if (potPoints.get(i).equals(Collections.max(potPoints)))
-                winners.add(players.get(i));
-        for (Player p : winners) {
-            handleVictory(p, pot, winners.size());
-            getVictoryText(p, pot, winners.size());
         }
     }
 
     /**
      * Shows the players hands, determines the score for each hand and decides the winners for each pot.
      */
-    public void showdown() {
+    void showdown() {
         getPhaseText("SHOWDOWN");
-        List<Integer> points = new ArrayList<>();
+        List<Integer> points = game.getHandsScores();
         drawPlayersHands(true);
-        for (int i = 0; i < NUM_PLAYERS; i++) {
-            if (bets.get(i).isFolded()) {
-                points.add(0);
-                continue;
-            }
-            Hand hand = new Hand(getAllPlayerCards(hands.get(i)));
-            getShowdownText(hand.getBestHand(), hands.get(i).getPlayer());
-            points.add(hand.getBestHand());
-        }
-        getPotWinners(points, pot);
-        if (sidePot) {
-            for (Pot s : sidePots)
-                getPotWinners(points, s);
+        for (int i = 0; i < GameLogic.NUM_PLAYERS; i++)
+            if (points.get(i) != 0)
+                getShowdownText(points.get(i), game.getPlayerAt(i));
+        getPotWinnersText(points, game.getPot());
+        if (game.isSidePot()) {
+            for (Pot s : game.getSidePots())
+                getPotWinnersText(points, s);
         }
     }
 
     /**
-     * Obtains all the cards associated with a player.
+     * Shows the winning text for each winner of the pot.
      *
-     * @param playerHand the player's hand
-     *
-     * @return the cards in the player's hand and the community cards
+     * @param points list of players hand scores
+     * @param pot the pot considered
      */
-    public List<Card> getAllPlayerCards(PlayerHand playerHand) {
-        List<Card> cardList = new ArrayList<>();
-        cardList.addAll(playerHand.getCards());
-        cardList.addAll(communityCards.getCommunityCards());
-        return cardList;
-    }
-
-    /**
-     * Updates the winner balance.
-     *
-     * @param p the winning player
-     * @param pot the pot won by the player
-     * @param numWinners the number of winners for the pot
-     */
-    public void handleVictory(Player p, Pot pot, int numWinners) {
-        p.setBalance(p.getBalance() + (pot.getAmount() / numWinners));
-    }
-
-    /**
-     * Resets the playerBet objects list for a new turn.
-     */
-    public void resetBets() {
-        bets.forEach(playerBet -> playerBet.setBet(-1L));
-        maxRaise = 0L;
-    }
-
-    /**
-     * Execute the check action.
-     *
-     * @param playerBet the player who checks
-     */
-    public void check(PlayerBet playerBet) {
-        playerBets(playerBet, 0L);
-        getActionText("CHECK", playerBet.getPlayer().getUsername(), 0);
-    }
-
-    /**
-     * Execute the call action.
-     *
-     * @param playerBet the player who calls
-     * @param bet the bet to call
-     */
-    public void call(PlayerBet playerBet, long bet) {
-        if (bet == 0)
-            bet = BLIND;
-        if (playerBet.isBigBlind() && !communityCards.isFlopShown() && bet == BLIND)
-            bet = 2 * BLIND;
-        if ((bet -= playerBet.getBet()) >= playerBet.getPlayer().getBalance())
-            allIn(playerBet);
-        else {
-            playerBets(playerBet, bet);
-            getActionText("CALL", playerBet.getPlayer().getUsername(), 0);
-        }
-    }
-
-    /**
-     * Execute the raise action.
-     *
-     * @param playerBet the player who raises
-     * @param amount the amount to raise
-     */
-    public void raise(PlayerBet playerBet, long amount) {
-        maxRaise = Math.max(amount, maxRaise);
-        if ((amount += (maxBet() - playerBet.getBet())) >= playerBet.getPlayer().getBalance())
-            allIn(playerBet);
-        else {
-            playerBets(playerBet, amount);
-            getActionText("RAISE", playerBet.getPlayer().getUsername(), maxBet());
-        }
-    }
-
-    /**
-     * Execute the fold action.
-     *
-     * @param playerBet the player who folds
-     */
-    public void fold(PlayerBet playerBet) {
-        playerBet.setFolded(true);
-        drawPlayersHands(false);
-        getActionText("FOLD", playerBet.getPlayer().getUsername(), 0);
-    }
-
-    /**
-     * Execute the all in action.
-     *
-     * @param playerBet the player who all in
-     */
-    public void allIn(PlayerBet playerBet) {
-        handleSidePots(playerBet.getPlayer().getBalance() + playerBet.getBet());
-        playerBets(playerBet, playerBet.getPlayer().getBalance());
-        getActionText("ALL IN", playerBet.getPlayer().getUsername(), 0);
-    }
-
-    /**
-     * Handles the creation of side pots.
-     *
-     * @param amount the new maximum bet amount for the main pot
-     */
-    public void handleSidePots(long amount) {
-        brokePlayer = true;
-        Pot sPot = new Pot(NUM_PLAYERS);
-        for (int i = 0; i < NUM_PLAYERS; i++) {
-            if (bets.get(i).getBet() > amount) {
-                sidePot = true;
-                sPot.addAmount(bets.get(i).getBet() - amount);
-                pot.subAmount(bets.get(i).getBet() - amount);
-                sPot.addPlayerAmount(i, bets.get(i).getBet() - amount);
-                pot.subPlayerAmount(i, bets.get(i).getBet() - amount);
-                bets.get(i).setBet(amount);
-            }
-        }
-        if (sidePot)
-            sidePots.add(sPot);
+    void getPotWinnersText(List<Integer> points, Pot pot) {
+        List<Player> winners = game.getPotWinners(points, pot);
+        winners.forEach(winner -> getVictoryText(winner, pot, winners.size()));
     }
 
     /**
      * Generate the text describing the action.
      *
      * @param action the action of the player
-     * @param user the username of the player
+     * @param player the player
      * @param amount the optional amount of the raise, otherwise 0
      */
-    public void getActionText(String action, String user, long amount) {
+    void getActionText(String action, Player player, long amount) {
         String actionString;
-        if (amount != 0)
-            actionString = String.format("%s %sS to %d", user, action, amount);
-        else if (action.equals("ALL IN"))
-            actionString = String.format("%s %s", user, action);
+        if (action.equals("FOLD"))
+            drawPlayersHands(false);
         else
-            actionString = String.format("%s %sS", user, action);
+            drawPlayerChips(player);
+        if (action.equals("RAISE"))
+            actionString = String.format("%s %sS to %d", player.getUsername(), action, amount);
+        else if (action.equals("ALL IN"))
+            actionString = String.format("%s %s", player.getUsername(), action);
+        else
+            actionString = String.format("%s %sS", player.getUsername(), action);
         Text actionText = new Text(actionString);
         actionText.setFont(Font.font(14));
         switch (action) {
@@ -903,7 +595,7 @@ public class PokerGameController {
      *
      * @param phase the phase of the game
      */
-    public void getPhaseText(String phase) {
+    void getPhaseText(String phase) {
         Text phaseText = new Text(phase);
         phaseText.setFont(Font.font("System", FontWeight.BOLD, 14));
         phaseText.setFill(Color.BLACK);
@@ -916,7 +608,7 @@ public class PokerGameController {
      * @param points the score of the player's hand
      * @param p the player
      */
-    public void getShowdownText(int points, Player p) {
+    void getShowdownText(int points, Player p) {
         String showdownString;
         showdownString = String.format("%s has %s", p.getUsername(), getHandString(points));
         Text showdownText = new Text(showdownString);
@@ -925,7 +617,7 @@ public class PokerGameController {
         updateTextFlowNarrator(showdownText);
     }
 
-    public String getHandString(int points) {
+    String getHandString(int points) {
         return switch (points / 1000000) {
             case 1 -> "ONE PAIR";
             case 2 -> "TWO PAIRS";
@@ -946,70 +638,13 @@ public class PokerGameController {
      * @param pot the pot won by the player
      * @param numWinners the number of winners for the pot
      */
-    public void getVictoryText(Player p, Pot pot, int numWinners) {
+    void getVictoryText(Player p, Pot pot, int numWinners) {
         String victoryString;
         victoryString = String.format("%s WINS %d!!", p.getUsername(), (pot.getAmount() / numWinners));
         Text victoryText = new Text(victoryString);
         victoryText.setFill(Color.GREEN);
         victoryText.setFont(Font.font("System", FontWeight.BOLD, 14));
         updateTextFlowNarrator(victoryText);
-    }
-
-    /**
-     * Handle the player's bet
-     *
-     * @param playerBet the player who bets
-     * @param bet the amount of the bet
-     */
-    public void playerBets(PlayerBet playerBet, long bet) {
-        playerBet.getPlayer().setBalance(playerBet.getPlayer().getBalance() - bet);
-        playerBet.addBet(bet);
-        pot.addAmount(bet);
-        pot.addPlayerAmount(bets.indexOf(playerBet), bet);
-        drawPlayerChips(playerBet);
-    }
-
-    /**
-     * Determine if the bet cycle is ended for the current turn.
-     *
-     * @return true if the cycle have to stop, otherwise false
-     */
-    public boolean stopBetting() {
-        int count = 0;
-        long bet = 0L;
-        boolean equals = true, first = true;
-        for (int i = 0; i < NUM_PLAYERS; i++) {
-            if (!bets.get(i).isFolded()) {
-                count++;
-                if (first) {
-                    bet = bets.get(i).getBet();
-                    if (bet < 0)
-                        equals = false;
-                    first = false;
-                } else if (bet != bets.get(i).getBet())
-                    equals = false;
-            }
-        }
-        if (count == 1)
-            return true;
-        //In the first round of bets the Big Blind can check, raise or fold.
-        if (!communityCards.isFlopShown() && !bigBlindAction)
-            return false;
-        return equals;
-    }
-
-    /**
-     * Determine the maximal bet in the current turn.
-     *
-     * @return the maximal bet
-     */
-    public long maxBet() {
-        long max = 0;
-        for (int i = 0; i < NUM_PLAYERS; i++) {
-            if (max < bets.get(i).getBet())
-                max = bets.get(i).getBet();
-        }
-        return max;
     }
 
     /**
@@ -1023,7 +658,7 @@ public class PokerGameController {
 
             //Set the player into the controller.
             PokerLobbyController controller = loader.getController();
-            controller.setPlayer(players.get(0));
+            controller.setPlayer(game.getPlayerAt(0));
 
             //Create the stage.
             Stage stage = (Stage) leaveTableButton.getScene().getWindow();
