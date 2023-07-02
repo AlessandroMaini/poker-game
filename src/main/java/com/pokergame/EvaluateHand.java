@@ -3,43 +3,33 @@ package com.pokergame;
 import java.util.Arrays;
 import java.util.Comparator;
 
+/**
+ * A static class to evaluate a 5 card poker hand.
+ *
+ * @author Alessandro Maini
+ * @version 2023.07.02
+ */
 public class EvaluateHand {
-    /* --------------------------------------------------------------
-   Contains method to evaluate the strength of Poker hands
-
-   I made them as STATIC (class) methods, because they 
-   are like methods such as "sin(x)", "cos(x)", that
-   evaluate the sine, cosine of a value x
-
-   Input of each method:
-
-     Card[] h;  (5 Cards)
-
-   Output of each method:
-
-     An integer value represent the strength
-     The higher the integer, the stronger the hand
-   -------------------------------------------------------------- */
     public static final int STRAIGHT_FLUSH = 8000000;
     public static final int FOUR_OF_A_KIND = 7000000;
     public static final int FULL_HOUSE = 6000000;
     public static final int FLUSH = 5000000;
     public static final int STRAIGHT = 4000000;
-    public static final int SET = 3000000;
+    public static final int THREE_OF_A_KIND = 3000000;
     public static final int TWO_PAIRS = 2000000;
     public static final int ONE_PAIR = 1000000;
 
-    /***********************************************************
-     Methods used to determine a certain Poker hand
-     ***********************************************************/
-
-/* --------------------------------------------------------
-  valueHand(): return value of a hand
-  -------------------------------------------------------- */
+    /**
+     * Evaluate the 5 card hand.
+     *
+     * @param h the 5 cards array
+     *
+     * @return the hand's score
+     */
     public static int valueHand(Card[] h) {
         if (isFlush(h) && isStraight(h))
             return valueStraightFlush(h);
-        else if (is4s(h))
+        else if (isFourOfAKind(h))
             return valueFourOfAKind(h);
         else if (isFullHouse(h))
             return valueFullHouse(h);
@@ -47,144 +37,131 @@ public class EvaluateHand {
             return valueFlush(h);
         else if (isStraight(h))
             return valueStraight(h);
-        else if (is3s(h))
-            return valueSet(h);
-        else if (is22s(h))
+        else if (isThreeOfAKind(h))
+            return valueThreeOfAKind(h);
+        else if (isTwoPairs(h))
             return valueTwoPairs(h);
-        else if (is2s(h))
+        else if (isOnePair(h))
             return valueOnePair(h);
         else
             return valueHighCard(h);
     }
 
-    /* -----------------------------------------------------
-       valueFlush(): return value of a Flush hand
- 
-             value = FLUSH + valueHighCard()
-       ----------------------------------------------------- */
+    /**
+     * Evaluate a Straight Flush.
+     *
+     * @param h the 5 cards array
+     *
+     * @return the straight flush score
+     */
     public static int valueStraightFlush(Card[] h) {
         return STRAIGHT_FLUSH + valueHighCard(h);
     }
 
-    /* -----------------------------------------------------
-       valueFlush(): return value of a Flush hand
- 
-             value = FLUSH + valueHighCard()
-       ----------------------------------------------------- */
+    /**
+     * Evaluate a Flush.
+     *
+     * @param h the 5 cards array
+     *
+     * @return the flush score
+     */
     public static int valueFlush(Card[] h) {
         return FLUSH + valueHighCard(h);
     }
 
-    /* -----------------------------------------------------
-       valueStraight(): return value of a Straight hand
- 
-             value = STRAIGHT + valueHighCard()
-       ----------------------------------------------------- */
+    /**
+     * Evaluate a Straight.
+     *
+     * @param h the 5 cards array
+     *
+     * @return the straight score
+     */
     public static int valueStraight(Card[] h) {
         return STRAIGHT + valueHighCard(h);
     }
 
-    /* ---------------------------------------------------------
-       valueFourOfAKind(): return value of a 4 of a kind hand
- 
-             value = FOUR_OF_A_KIND + 4sCardRank
- 
-       Trick: card h[2] is always a card that is part of 
-              the 4-of-a-kind hand
-       --------------------------------------------------------- */
+    /**
+     * Evaluate a Four of a Kind.
+     *
+     * @param h the 5 cards array
+     *
+     * @return the four of a kind score
+     */
     public static int valueFourOfAKind(Card[] h) {
         int val;
-
         sortByRank(h);
-
         if (h[0].getValue() == h[3].getValue())
             val = 14 * 14 * 14 * h[2].getValue() + 14 * 14 * h[4].getValue();
         else
             val = 14 * 14 * 14 * h[2].getValue() + 14 * 14 * h[0].getValue();
-
         return FOUR_OF_A_KIND + val;
     }
 
-    /* -----------------------------------------------------------
-       valueFullHouse(): return value of a Full House hand
- 
-             value = FULL_HOUSE + SetCardRank
- 
-       Trick: card h[2] is always a card that is part of
-              the 3-of-a-kind in the full house hand
-       ----------------------------------------------------------- */
+    /**
+     * Evaluate a Full House.
+     *
+     * @param h the 5 cards array
+     *
+     * @return the full house score
+     */
     public static int valueFullHouse(Card[] h) {
         int val;
-
         sortByRank(h);
-
         if (h[0].getValue() == h[2].getValue() && h[3].getValue() == h[4].getValue())
             val = 14 * 14 * 14 * h[2].getValue() + 14 * 14 * h[4].getValue();
         else
             val = 14 * 14 * 14 * h[2].getValue() + 14 * 14 * h[0].getValue();
-
         return FULL_HOUSE + val;
     }
 
-    /* ---------------------------------------------------------------
-       valueSet(): return value of a Set hand
- 
-             value = SET + SetCardRank
- 
-       Trick: card h[2] is always a card that is part of the set hand
-       --------------------------------------------------------------- */
-    public static int valueSet(Card[] h) {
+    /**
+     * Evaluate a Three of a Kind.
+     *
+     * @param h the 5 cards array
+     *
+     * @return the three of a kind score
+     */
+    public static int valueThreeOfAKind(Card[] h) {
         int val;
-
         sortByRank(h);
-
         if (h[0].getValue() == h[2].getValue())
             val = 14 * 14 * 14 * h[2].getValue() + 14 * h[3].getValue() + 14 * 14 * h[4].getValue();
         else if (h[1].getValue() == h[3].getValue())
             val = 14 * 14 * 14 * h[2].getValue() + 14 * h[0].getValue() + 14 * 14 * h[4].getValue();
         else
             val = 14 * 14 * 14 * h[2].getValue() + 14 * h[0].getValue() + 14 * 14 * h[1].getValue();
-
-        return SET + val;
+        return THREE_OF_A_KIND + val;
     }
 
-    /* -----------------------------------------------------
-       valueTwoPairs(): return value of a Two-Pairs hand
- 
-             value = TWO_PAIRS
-                    + 14*14*HighPairCard
-                    + 14*LowPairCard
-                    + UnmatchedCard
-       ----------------------------------------------------- */
+    /**
+     * Evaluate Two Pairs.
+     *
+     * @param h the 5 cards array
+     *
+     * @return the two pairs score
+     */
     public static int valueTwoPairs(Card[] h) {
         int val;
-
         sortByRank(h);
-
         if (h[0].getValue() == h[1].getValue() && h[2].getValue() == h[3].getValue())
             val = 14 * 14 * 14 * h[2].getValue() + 14 * 14 * h[0].getValue() + 14 * h[4].getValue();
         else if (h[0].getValue() == h[1].getValue() && h[3].getValue() == h[4].getValue())
             val = 14 * 14 * 14 * h[3].getValue() + 14 * 14 * h[0].getValue() + 14 * h[2].getValue();
         else
             val = 14 * 14 * 14 * h[3].getValue() + 14 * 14 * h[1].getValue() + 14 * h[0].getValue();
-
         return TWO_PAIRS + val;
     }
 
-    /* -----------------------------------------------------
-       valueOnePair(): return value of a One-Pair hand
- 
-             value = ONE_PAIR 
-                    + 14^3*PairCard
-                    + 14^2*HighestCard
-                    + 14*MiddleCard
-                    + LowestCard
-       ----------------------------------------------------- */
+    /**
+     * Evaluate a One Pair.
+     *
+     * @param h the 5 cards array
+     *
+     * @return the one pair score
+     */
     public static int valueOnePair(Card[] h) {
         int val;
-
         sortByRank(h);
-
         if (h[0].getValue() == h[1].getValue())
             val = 14 * 14 * 14 * h[0].getValue() + h[2].getValue() + 14 * h[3].getValue() + 14 * 14 * h[4].getValue();
         else if (h[1].getValue() == h[2].getValue())
@@ -193,230 +170,176 @@ public class EvaluateHand {
             val = 14 * 14 * 14 * h[2].getValue() + h[0].getValue() + 14 * h[1].getValue() + 14 * 14 * h[4].getValue();
         else
             val = 14 * 14 * 14 * h[3].getValue() + h[0].getValue() + 14 * h[1].getValue() + 14 * 14 * h[2].getValue();
-
         return ONE_PAIR + val;
     }
 
-    /* -----------------------------------------------------
-       valueHighCard(): return value of a high card hand
- 
-             value =  14^4*highestCard 
-                    + 14^3*2ndHighestCard
-                    + 14^2*3rdHighestCard
-                    + 14^1*4thHighestCard
-                    + LowestCard
-       ----------------------------------------------------- */
+    /**
+     * Evaluate a High Card.
+     *
+     * @param h the 5 cards array
+     *
+     * @return the high card score
+     */
     public static int valueHighCard(Card[] h) {
         int val;
-
         sortByRank(h);
-
         val = h[0].getValue() + 14 * h[1].getValue() + 14 * 14 * h[2].getValue() + 14 * 14 * 14 * h[3].getValue() + 14 * 14 * 14 * 14 * h[4].getValue();
-
         return val;
     }
 
-    /***********************************************************
-     Methods used to determine a certain Poker hand
-     ***********************************************************/
-
-
-/* ---------------------------------------------
-  is4s(): true if h has 4 of a kind
-          false otherwise
-  --------------------------------------------- */
-    public static boolean is4s(Card[] h) {
+    /**
+     * Determine if the hand is Four of a Kind
+     *
+     * @param h the 5 cards array
+     *
+     * @return true if it's four of a kind, otherwise false
+     */
+    public static boolean isFourOfAKind(Card[] h) {
         boolean a1, a2;
-
         if (h.length != 5)
             return (false);
-
         sortByRank(h);
-
         a1 = h[0].getValue() == h[3].getValue();
-
         a2 = h[1].getValue() == h[4].getValue();
-
         return (a1 || a2);
     }
 
-    /* ----------------------------------------------------
-       isFullHouse(): true if h has Full House
-                      false otherwise
-       ---------------------------------------------------- */
+    /**
+     * Determine if the hand is Full House
+     *
+     * @param h the 5 cards array
+     *
+     * @return true if it's full house, otherwise false
+     */
     public static boolean isFullHouse(Card[] h) {
         boolean a1, a2;
-
         if (h.length != 5)
             return (false);
-
         sortByRank(h);
-
         a1 = h[0].getValue() == h[2].getValue() && h[3].getValue() == h[4].getValue();
-
         a2 = h[0].getValue() == h[1].getValue() && h[2].getValue() == h[4].getValue();
-
         return (a1 || a2);
     }
 
-    /* ----------------------------------------------------
-       is3s(): true if h has 3 of a kind
-               false otherwise
- 
-       **** Note: use is3s() ONLY if you know the hand
-                  does not have 4 of a kind 
-       ---------------------------------------------------- */
-    public static boolean is3s(Card[] h) {
+    /**
+     * Determine if the hand is Three of a Kind
+     *
+     * @param h the 5 cards array
+     *
+     * @return true if it's three of a kind, otherwise false
+     */
+    public static boolean isThreeOfAKind(Card[] h) {
         boolean a1, a2, a3;
-
         if (h.length != 5)
             return (false);
-
-        if (is4s(h) || isFullHouse(h))
-            return (false);        // The hand is not 3 of a kind (but better)
-
-  /* ----------------------------------------------------------
-     Now we know the hand is not 4 of a kind or a full house !
-     ---------------------------------------------------------- */
+        if (isFourOfAKind(h) || isFullHouse(h))
+            return (false);
         sortByRank(h);
-
         a1 = h[0].getValue() == h[2].getValue();
-
         a2 = h[1].getValue() == h[3].getValue();
-
         a3 = h[2].getValue() == h[4].getValue();
-
         return (a1 || a2 || a3);
     }
 
-    /* -----------------------------------------------------
-       is22s(): true if h has 2 pairs
-                false otherwise
- 
-       **** Note: use is22s() ONLY if you know the hand
-                  does not have 3 of a kind or better
-       ----------------------------------------------------- */
-    public static boolean is22s(Card[] h) {
+    /**
+     * Determine if the hand is Two Pairs
+     *
+     * @param h the 5 cards array
+     *
+     * @return true if it's two pairs, otherwise false
+     */
+    public static boolean isTwoPairs(Card[] h) {
         boolean a1, a2, a3;
-
         if (h.length != 5)
             return (false);
-
-        if (is4s(h) || isFullHouse(h) || is3s(h))
-            return (false);        // The hand is not 2 pairs (but better)
-
+        if (isFourOfAKind(h) || isFullHouse(h) || isThreeOfAKind(h))
+            return (false);
         sortByRank(h);
-
         a1 = h[0].getValue() == h[1].getValue() && h[2].getValue() == h[3].getValue();
-
         a2 = h[0].getValue() == h[1].getValue() && h[3].getValue() == h[4].getValue();
-
         a3 = h[1].getValue() == h[2].getValue() && h[3].getValue() == h[4].getValue();
-
         return (a1 || a2 || a3);
     }
 
-    /* -----------------------------------------------------
-       is2s(): true if h has one pair
-               false otherwise
- 
-       **** Note: use is22s() ONLY if you know the hand
-                  does not have 2 pairs or better
-       ----------------------------------------------------- */
-    public static boolean is2s(Card[] h) {
+    /**
+     * Determine if the hand is One Pair
+     *
+     * @param h the 5 cards array
+     *
+     * @return true if it's one pair, otherwise false
+     */
+    public static boolean isOnePair(Card[] h) {
         boolean a1, a2, a3, a4;
-
         if (h.length != 5)
             return (false);
-
-        if (is4s(h) || isFullHouse(h) || is3s(h) || is22s(h))
-            return (false);        // The hand is not one pair (but better)
-
+        if (isFourOfAKind(h) || isFullHouse(h) || isThreeOfAKind(h) || isTwoPairs(h))
+            return (false);
         sortByRank(h);
-
         a1 = h[0].getValue() == h[1].getValue();
         a2 = h[1].getValue() == h[2].getValue();
         a3 = h[2].getValue() == h[3].getValue();
         a4 = h[3].getValue() == h[4].getValue();
-
         return (a1 || a2 || a3 || a4);
     }
 
-    /* ---------------------------------------------
-       isFlush(): true if h has a flush
-                  false otherwise
-       --------------------------------------------- */
+    /**
+     * Determine if the hand is Flush
+     *
+     * @param h the 5 cards array
+     *
+     * @return true if it's flush, otherwise false
+     */
     public static boolean isFlush(Card[] h) {
         if (h.length != 5)
             return (false);
-
         sortBySuit(h);
-
-        return (h[0].getSuit() == h[4].getSuit());   // All cards have same suit
+        return (h[0].getSuit() == h[4].getSuit());
     }
 
-    /* ---------------------------------------------
-       isStraight(): true if h is a Straight
-                     false otherwise
-       --------------------------------------------- */
+    /**
+     * Determine if the hand is Straight
+     *
+     * @param h the 5 cards array
+     *
+     * @return true if it's straight, otherwise false
+     */
     public static boolean isStraight(Card[] h) {
         int i, testRank;
-
         if (h.length != 5)
             return (false);
-
         sortByRank(h);
-
-  /* ===========================
-     Check if hand has an Ace
-     =========================== */
+        //Check if there's an ace
         if (h[4].getValue() == 14) {
-     /* =================================
-        Check straight using an Ace
-        ================================= */
+            //Checking straight with ace
             boolean a = h[0].getValue() == 2 && h[1].getValue() == 3 && h[2].getValue() == 4 && h[3].getValue() == 5;
             boolean b = h[0].getValue() == 10 && h[1].getValue() == 11 && h[2].getValue() == 12 && h[3].getValue() == 13;
-
             return (a || b);
         } else {
-     /* ===========================================
-        General case: check for increasing values
-        =========================================== */
+            //General case
             testRank = h[0].getValue() + 1;
-
             for (i = 1; i < 5; i++) {
                 if (h[i].getValue() != testRank)
-                    return false;        // Straight failed...
-
+                    return false;
                 testRank++;
             }
-
-            return true;        // Straight found !
+            return true;
         }
     }
 
-/* ===========================================================
-  Helper methods
-  =========================================================== */
-
-    /* ---------------------------------------------
-       Sort hand by rank:
- 
-           smallest ranked card first .... 
- 
-       (Finding a straight is easier that way)
-       --------------------------------------------- */
+    /**
+     * Order the cards by value or rank (increasing).
+     *
+     * @param h the 5 cards array
+     */
     public static void sortByRank(Card[] h) {
         Arrays.sort(h, Comparator.comparingInt(Card::getValue));
     }
 
-    /* ---------------------------------------------
-       Sort hand by suit:
- 
-           smallest suit card first .... 
- 
-       (Finding a flush is easier that way)
-       --------------------------------------------- */
+    /**
+     * Order the cards by suit (increasing).
+     *
+     * @param h the 5 cards array
+     */
     public static void sortBySuit(Card[] h) {
         Arrays.sort(h, Comparator.comparingInt(Card::getSuit));
     }

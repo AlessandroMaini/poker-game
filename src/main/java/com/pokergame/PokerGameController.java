@@ -30,7 +30,7 @@ import java.util.random.RandomGenerator;
  * Game view controller.
  *
  * @author Alessandro Maini
- * @version 2023.06.28
+ * @version 2023.07.02
  */
 public class PokerGameController {
     /** Card images dimensions */
@@ -63,11 +63,16 @@ public class PokerGameController {
     public boolean firstGame;
     /** Determine if is the big blind turn */
     public boolean bigBlindAction;
+    /** Determine if there are side pots */
     public boolean sidePot;
+    /** Determine if one player has a void balance */
     public boolean brokePlayer;
     public RandomGenerator randomGenerator = RandomGenerator.getDefault();
-    public boolean waitingForEnter;
+    /** Determine if the game is waiting for the user to click on the next arrow */
+    public boolean waitingForNext;
+    /** Index of the next player to bet */
     public int nextBetIndex;
+    /** Determine if a new game have to start */
     public boolean startNewGame;
     @FXML
     private Canvas canvasCommunity;
@@ -127,17 +132,20 @@ public class PokerGameController {
     @FXML
     public void initialize() {
         firstGame = true;
-        waitingForEnter = false;
+        waitingForNext = false;
         dealer = -1;
         canvasListPlayers = Arrays.asList(canvasPlayer0, canvasPlayer1, canvasPlayer2, canvasPlayer3);
         canvasListDealer = Arrays.asList(canvasDealer0, canvasDealer1, canvasDealer2, canvasDealer3);
         canvasListChips = Arrays.asList(canvasBet0, canvasBet1, canvasBet2, canvasBet3);
     }
 
+    /**
+     * Handles the click of the next arrow.
+     */
     @FXML
     void handleNext() {
-        if (waitingForEnter) {
-            waitingForEnter = false;
+        if (waitingForNext) {
+            waitingForNext = false;
             if (startNewGame)
                 startGame(players.get(0));
             else
@@ -155,9 +163,8 @@ public class PokerGameController {
             userMove = false;
             setPlayerLabel(0);
             clearCanvasChoose();
-            waitingForEnter = true;
+            waitingForNext = true;
             nextBetIndex = 1;
-            //            bet(1);
         }
     }
 
@@ -171,7 +178,7 @@ public class PokerGameController {
             userMove = false;
             setPlayerLabel(0);
             clearCanvasChoose();
-            waitingForEnter = true;
+            waitingForNext = true;
             nextBetIndex = 1;
         }
     }
@@ -186,7 +193,7 @@ public class PokerGameController {
             userMove = false;
             setPlayerLabel(0);
             clearCanvasChoose();
-            waitingForEnter = true;
+            waitingForNext = true;
             nextBetIndex = 1;
         }
     }
@@ -219,7 +226,7 @@ public class PokerGameController {
                     userMove = false;
                     setPlayerLabel(0);
                     clearCanvasChoose();
-                    waitingForEnter = true;
+                    waitingForNext = true;
                     nextBetIndex = 1;
                 }
             } catch (IOException e) {
@@ -228,6 +235,9 @@ public class PokerGameController {
         }
     }
 
+    /**
+     * Handles the all in action by the user.
+     */
     @FXML
     void handleAllIn() {
         if (userMove && (!brokePlayer || players.get(0).getBalance() <= (maxBet() - bets.get(0).getBet()))) {
@@ -235,7 +245,7 @@ public class PokerGameController {
             userMove = false;
             setPlayerLabel(0);
             clearCanvasChoose();
-            waitingForEnter = true;
+            waitingForNext = true;
             nextBetIndex = 1;
         }
     }
@@ -249,7 +259,7 @@ public class PokerGameController {
     /**
      * Shows the player info on the screen.
      *
-     * @param index the index of the player in the players array
+     * @param index the index of the player in the players list
      */
     void setPlayerLabel(int index) {
         GraphicsContext graphicsContext = canvasListPlayers.get(index).getGraphicsContext2D();
@@ -310,6 +320,7 @@ public class PokerGameController {
         graphicsContext.drawImage(card2, 120, 0, CARD_WIDTH, CARD_HEIGHT);
         graphicsContext.drawImage(card3, 240, 0, CARD_WIDTH, CARD_HEIGHT);
         setCanvasBestHand();
+        getPhaseText("FLOP");
     }
 
     /**
@@ -321,6 +332,7 @@ public class PokerGameController {
         graphicsContext.drawImage(card, 360, 0, CARD_WIDTH, CARD_HEIGHT);
         clearCanvasBestHand();
         setCanvasBestHand();
+        getPhaseText("TURN");
     }
 
     /**
@@ -332,6 +344,7 @@ public class PokerGameController {
         graphicsContext.drawImage(card, 480, 0, CARD_WIDTH, CARD_HEIGHT);
         clearCanvasBestHand();
         setCanvasBestHand();
+        getPhaseText("RIVER");
     }
 
     /**
@@ -414,7 +427,7 @@ public class PokerGameController {
     }
 
     /**
-     * Writes on screen the options for the player.
+     * Writes on screen the options for the user.
      */
     void setCanvasChoose() {
         GraphicsContext graphicsContext = canvasChoose.getGraphicsContext2D();
@@ -451,6 +464,9 @@ public class PokerGameController {
         canvasCommunity.getGraphicsContext2D().clearRect(0, 0, 580, CARD_HEIGHT);
     }
 
+    /**
+     * Writes on screen the best hand of the user.
+     */
     void setCanvasBestHand() {
         GraphicsContext graphicsContext = canvasChoose.getGraphicsContext2D();
         graphicsContext.setFill(Color.WHITE);
@@ -494,28 +510,30 @@ public class PokerGameController {
                 setPlayersLabels();
                 setDealer();
                 drawDealer();
-                Text startText = new Text("-----NEW GAME STARTING-----");
-                startText.setFill(Color.BLACK);
-                startText.setFont(Font.font("System", FontWeight.BOLD, 14));
-                updateTextFlowNarrator(startText);
+                getPhaseText("-----NEW GAME STARTING-----");
                 setBets();
                 setBlinds();
                 setHands();
                 drawPlayersHands(false);
                 startNewGame = false;
                 nextBetIndex = (dealer + 3) % NUM_PLAYERS;
-                waitingForEnter = true;
-            }
+                waitingForNext = true;
+            } else
+                returnToLobby();
         }
     }
 
+    /**
+     * Replaces the players with a void balance.
+     *
+     * @return false if the user has a void balance, otherwise true
+     */
     public boolean replacePlayers() {
         for (int i = 0; i < NUM_PLAYERS; i++) {
             if (players.get(i).getBalance() <= 0) {
-                if (i == 0) {
-                    returnToLobby();
+                if (i == 0)
                     return false;
-                } else
+                else
                     players.set(i, generateBot(players.get(0)));
             }
         }
@@ -531,7 +549,7 @@ public class PokerGameController {
         List<Card> cards = List.of(deck.drawCard(), deck.drawCard(), deck.drawCard());
         communityCards.setFlop(cards);
         drawFlop();
-        waitingForEnter = true;
+        waitingForNext = true;
         nextBetIndex = (dealer + 3) % NUM_PLAYERS;
     }
 
@@ -543,7 +561,7 @@ public class PokerGameController {
         deck.drawCard();
         communityCards.setTurn(deck.drawCard());
         drawTurn();
-        waitingForEnter = true;
+        waitingForNext = true;
         nextBetIndex = (dealer + 3) % NUM_PLAYERS;
     }
 
@@ -555,7 +573,7 @@ public class PokerGameController {
         deck.drawCard();
         communityCards.setRiver(deck.drawCard());
         drawRiver();
-        waitingForEnter = true;
+        waitingForNext = true;
         nextBetIndex = (dealer + 3) % NUM_PLAYERS;
     }
 
@@ -564,13 +582,10 @@ public class PokerGameController {
      */
     public void setDealer() {
         dealer = (dealer + 1) % NUM_PLAYERS;
-        System.out.println("Dealer in posizione " + dealer);
-        System.out.println("Piccolo buio in posizione " + (dealer + 1) % NUM_PLAYERS);
-        System.out.println("Grande buio in posizione " + (dealer + 2) % NUM_PLAYERS);
     }
 
     /**
-     * Generate the players array, with the user's player and bots.
+     * Generate the players list, with the user's player and bots.
      *
      * @param player the user's player
      */
@@ -591,7 +606,6 @@ public class PokerGameController {
     public Player generateBot(Player player) {
         Player p = new Player();
         p.setBalance(randomGenerator.nextLong((long) (player.getBalance() - (player.getBalance() * 0.5)), (long) (player.getBalance() + (player.getBalance() * 0.5))));
-        //        p.setBalance(randomGenerator.nextLong(100000L, 200000L));
         p.setUsername(String.format("Bot%d", randomGenerator.nextInt(1, 1000)));
         return p;
     }
@@ -631,7 +645,7 @@ public class PokerGameController {
     }
 
     /**
-     * Initialize the playerBet objects array.
+     * Initialize the playerBet objects list.
      */
     public void setBets() {
         bets = new ArrayList<>();
@@ -659,9 +673,8 @@ public class PokerGameController {
             else if (!communityCards.isRiverShown())
                 river();
             else {
-                System.out.println("SHOWDOWN!");
                 showdown();
-                waitingForEnter = true;
+                waitingForNext = true;
                 startNewGame = true;
             }
         } else if (bets.get(index).isFolded()) {
@@ -675,26 +688,49 @@ public class PokerGameController {
                 userMove = true;
             } else {
                 if (bets.get(index).getBet() < maxBet()) {
-                    if (randomGenerator.nextInt() % 2 == 0 || brokePlayer || players.get(index).getBalance() <= (maxBet() - bets.get(index).getBet())) {
+                    if (randomGenerator.nextInt() % 2 == 0 || brokePlayer || players.get(index).getBalance() <= (maxBet() - bets.get(index).getBet()))
                         call(bets.get(index), maxBet());
-                        System.out.println("CALL!");
-                    } else {
+                    else if (randomGenerator.nextInt() % 3 == 0)
                         raise(bets.get(index), Math.max(maxRaise, BLIND));
-                        System.out.println("RAISE!");
-                    }
-                } else {
-                    System.out.println("CHECK!");
+                    else
+                        fold(bets.get(index));
+                } else
                     check(bets.get(index));
-                }
                 setPlayerLabel(index);
-                waitingForEnter = true;
+                waitingForNext = true;
                 nextBetIndex = (index + 1) % NUM_PLAYERS;
             }
         }
     }
 
+    /**
+     * Determine the winners of the pot and updates their balances.
+     *
+     * @param points the score of the player's hands
+     * @param pot the pot considered
+     */
+    public void getPotWinners(List<Integer> points, Pot pot) {
+        List<Integer> potPoints = new ArrayList<>();
+        List<Player> winners = new ArrayList<>();
+        for (int i = 0; i < NUM_PLAYERS; i++)
+            if (pot.getPlayerAmount(i) > 0)
+                potPoints.add(points.get(i));
+            else
+                potPoints.add(0);
+        for (int i = 0; i < NUM_PLAYERS; i++)
+            if (potPoints.get(i).equals(Collections.max(potPoints)))
+                winners.add(players.get(i));
+        for (Player p : winners) {
+            handleVictory(p, pot, winners.size());
+            getVictoryText(p, pot, winners.size());
+        }
+    }
+
+    /**
+     * Shows the players hands, determines the score for each hand and decides the winners for each pot.
+     */
     public void showdown() {
-        int winner;
+        getPhaseText("SHOWDOWN");
         List<Integer> points = new ArrayList<>();
         drawPlayersHands(true);
         for (int i = 0; i < NUM_PLAYERS; i++) {
@@ -706,24 +742,20 @@ public class PokerGameController {
             getShowdownText(hand.getBestHand(), hands.get(i).getPlayer());
             points.add(hand.getBestHand());
         }
-        winner = points.indexOf(Collections.max(points));
-        handleVictory(players.get(winner), pot);
-        getVictoryText(players.get(winner), pot);
+        getPotWinners(points, pot);
         if (sidePot) {
-            for (Pot s : sidePots) {
-                List<Integer> sidePoints = new ArrayList<>();
-                for (int i = 0; i < NUM_PLAYERS; i++)
-                    if (s.getPlayerAmount(i) > 0)
-                        sidePoints.add(points.get(i));
-                    else
-                        sidePoints.add(0);
-                winner = sidePoints.indexOf(Collections.max(sidePoints));
-                handleVictory(players.get(winner), s);
-                getVictoryText(players.get(winner), s);
-            }
+            for (Pot s : sidePots)
+                getPotWinners(points, s);
         }
     }
 
+    /**
+     * Obtains all the cards associated with a player.
+     *
+     * @param playerHand the player's hand
+     *
+     * @return the cards in the player's hand and the community cards
+     */
     public List<Card> getAllPlayerCards(PlayerHand playerHand) {
         List<Card> cardList = new ArrayList<>();
         cardList.addAll(playerHand.getCards());
@@ -731,49 +763,22 @@ public class PokerGameController {
         return cardList;
     }
 
-    public void handleVictory(Player p, Pot pot) {
-        p.setBalance(p.getBalance() + pot.getAmount());
-    }
-
-    public void getShowdownText(int points, Player p) {
-        String showdownString;
-        showdownString = String.format("%s has %s", p.getUsername(), getHandString(points));
-        Text showdownText = new Text(showdownString);
-        showdownText.setFont(Font.font(14));
-        showdownText.setFill(Color.BLACK);
-        updateTextFlowNarrator(showdownText);
-    }
-
-    public String getHandString(int points) {
-        return switch (points / 1000000) {
-            case 1 -> "ONE PAIR";
-            case 2 -> "TWO PAIRS";
-            case 3 -> "THREE OF A KIND";
-            case 4 -> "STRAIGHT";
-            case 5 -> "FLUSH";
-            case 6 -> "FULL HOUSE";
-            case 7 -> "FOUR OF A KIND";
-            case 8 -> "STRAIGHT FLUSH";
-            default -> "HIGH CARD";
-        };
-    }
-
-    public void getVictoryText(Player p, Pot pot) {
-        String victoryString;
-        victoryString = String.format("%s WINS %d!!", p.getUsername(), pot.getAmount());
-        Text victoryText = new Text(victoryString);
-        victoryText.setFill(Color.GREEN);
-        victoryText.setFont(Font.font("System", FontWeight.BOLD, 14));
-        updateTextFlowNarrator(victoryText);
+    /**
+     * Updates the winner balance.
+     *
+     * @param p the winning player
+     * @param pot the pot won by the player
+     * @param numWinners the number of winners for the pot
+     */
+    public void handleVictory(Player p, Pot pot, int numWinners) {
+        p.setBalance(p.getBalance() + (pot.getAmount() / numWinners));
     }
 
     /**
-     * Resets the playerBet objects array for a new turn.
+     * Resets the playerBet objects list for a new turn.
      */
     public void resetBets() {
-        for (PlayerBet playerBet : bets) {
-            playerBet.setBet(-1L);
-        }
+        bets.forEach(playerBet -> playerBet.setBet(-1L));
         maxRaise = 0L;
     }
 
@@ -833,12 +838,22 @@ public class PokerGameController {
         getActionText("FOLD", playerBet.getPlayer().getUsername(), 0);
     }
 
+    /**
+     * Execute the all in action.
+     *
+     * @param playerBet the player who all in
+     */
     public void allIn(PlayerBet playerBet) {
         handleSidePots(playerBet.getPlayer().getBalance() + playerBet.getBet());
         playerBets(playerBet, playerBet.getPlayer().getBalance());
         getActionText("ALL IN", playerBet.getPlayer().getUsername(), 0);
     }
 
+    /**
+     * Handles the creation of side pots.
+     *
+     * @param amount the new maximum bet amount for the main pot
+     */
     public void handleSidePots(long amount) {
         brokePlayer = true;
         Pot sPot = new Pot(NUM_PLAYERS);
@@ -881,6 +896,63 @@ public class PokerGameController {
             case "ALL IN" -> actionText.setFill(Color.PURPLE);
         }
         updateTextFlowNarrator(actionText);
+    }
+
+    /**
+     * Generate the text describing the phase of the game.
+     *
+     * @param phase the phase of the game
+     */
+    public void getPhaseText(String phase) {
+        Text phaseText = new Text(phase);
+        phaseText.setFont(Font.font("System", FontWeight.BOLD, 14));
+        phaseText.setFill(Color.BLACK);
+        updateTextFlowNarrator(phaseText);
+    }
+
+    /**
+     * Generate the text describing the hand of the player.
+     *
+     * @param points the score of the player's hand
+     * @param p the player
+     */
+    public void getShowdownText(int points, Player p) {
+        String showdownString;
+        showdownString = String.format("%s has %s", p.getUsername(), getHandString(points));
+        Text showdownText = new Text(showdownString);
+        showdownText.setFont(Font.font(14));
+        showdownText.setFill(Color.BLACK);
+        updateTextFlowNarrator(showdownText);
+    }
+
+    public String getHandString(int points) {
+        return switch (points / 1000000) {
+            case 1 -> "ONE PAIR";
+            case 2 -> "TWO PAIRS";
+            case 3 -> "THREE OF A KIND";
+            case 4 -> "STRAIGHT";
+            case 5 -> "FLUSH";
+            case 6 -> "FULL HOUSE";
+            case 7 -> "FOUR OF A KIND";
+            case 8 -> "STRAIGHT FLUSH";
+            default -> "HIGH CARD";
+        };
+    }
+
+    /**
+     * Generate the text for the winning players
+     *
+     * @param p the winning player
+     * @param pot the pot won by the player
+     * @param numWinners the number of winners for the pot
+     */
+    public void getVictoryText(Player p, Pot pot, int numWinners) {
+        String victoryString;
+        victoryString = String.format("%s WINS %d!!", p.getUsername(), (pot.getAmount() / numWinners));
+        Text victoryText = new Text(victoryString);
+        victoryText.setFill(Color.GREEN);
+        victoryText.setFont(Font.font("System", FontWeight.BOLD, 14));
+        updateTextFlowNarrator(victoryText);
     }
 
     /**

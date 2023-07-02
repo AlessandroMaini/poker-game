@@ -8,7 +8,7 @@ import java.util.List;
  * The set of bets made in the game. With also the value of the bet for each player in an array.
  *
  * @author Alessandro Maini
- * @version 2023.06.28
+ * @version 2023.07.02
  */
 public class Pot {
     public long amount;

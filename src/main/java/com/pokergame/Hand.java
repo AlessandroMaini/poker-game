@@ -3,16 +3,32 @@ package com.pokergame;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * A list of 5 to 7 cards.
+ *
+ * @author Alessandro Maini
+ * @version 2023.07.02
+ */
 public class Hand {
     final public int NUM_HAND_CARDS = 5;
     public List<Card> cards;
     public int numCards;
 
+    /**
+     * Initialize a new hand.
+     *
+     * @param cards the list of cards
+     */
     public Hand(List<Card> cards) {
         this.cards = cards;
         this.numCards = cards.size();
     }
 
+    /**
+     * Determine the best possible combination of 5 cards from those in the list.
+     *
+     * @return the score of the best combination
+     */
     public int getBestHand() {
         int bestHand = 0;
         boolean[] flags = new boolean[numCards];
@@ -47,14 +63,23 @@ public class Hand {
         return bestHand;
     }
 
+    /**
+     * Evaluate a 5 cards combination.
+     *
+     * @param flags a boolean array to determine which cards to choose from those in the list
+     *
+     * @return the score of the combination
+     */
     public int evaluateHand(boolean[] flags) {
         Card[] hand = new Card[NUM_HAND_CARDS];
-        for (int i = 0, count = 0; i < numCards && count < NUM_HAND_CARDS; ++i) {
+        int valueExtra = 0;
+        for (int i = 0, count = 0; i < numCards; ++i) {
             if (flags[i]) {
                 hand[count] = cards.get(i);
                 ++count;
-            }
+            } else
+                valueExtra += cards.get(i).getValue();
         }
-        return EvaluateHand.valueHand(hand);
+        return EvaluateHand.valueHand(hand) + valueExtra;
     }
 }
