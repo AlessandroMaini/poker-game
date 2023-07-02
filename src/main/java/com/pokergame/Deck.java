@@ -13,10 +13,13 @@ import java.util.List;
 public class Deck {
     List<Card> cards;
 
+    /**
+     * Initialize a new deck with all the 52 cards in order.
+     */
     public Deck() {
         this.cards = new ArrayList<>();
         for (int i = 0; i < 52; i++) {
-            Card card = new Card(i / 13, i % 13);
+            Card card = new Card(i / 13, (i % 13) + 2);
             this.cards.add(card);
         }
     }

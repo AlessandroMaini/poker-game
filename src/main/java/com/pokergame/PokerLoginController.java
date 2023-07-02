@@ -15,13 +15,20 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Login view controller.
+ *
+ * @author Alessandro Maini
+ * @version 2023.06.28
+ */
 public class PokerLoginController {
-    /** path to the players database */
+    /** Path to the players database */
     final public static String PLAYER_DATABASE = "./src/main/resources/com/pokergame/players.json";
     @FXML
     private TextField username;
     @FXML
     private Button loginButton;
+
     Player player = new Player();
 
     /**
@@ -33,7 +40,7 @@ public class PokerLoginController {
     }
 
     /**
-     * Returns the players saved in the database
+     * Returns the players saved in the database.
      *
      * @return the list of Player objects
      */
@@ -50,10 +57,10 @@ public class PokerLoginController {
     }
 
     /**
-     * Allows you to log in the game as an existing player
+     * Allows you to log in the game as an existing player.
      */
     @FXML
-    private void handleLogin() {
+    void handleLogin() {
         boolean found = false;
         List<Player> players = getPlayerData();
         if (players != null)
@@ -67,19 +74,15 @@ public class PokerLoginController {
         if (!found)
             new Alert(Alert.AlertType.ERROR, "Could not find the user").showAndWait();
         else {
-            try {
-                switchToSceneLobby();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            switchToSceneLobby();
         }
     }
 
     /**
-     * Allows you to sign in the game as a new player
+     * Allows you to sign in the game as a new player.
      */
     @FXML
-    private void handleSignIn() {
+    void handleSignIn() {
         if (player.getUsername() == null || player.getUsername().contains(" ") || player.getUsername().length() == 0 || player.getUsername().length() > 15)
             new Alert(Alert.AlertType.ERROR, "Invalid name. The name must be shorter than 16 characters and must not contain spaces.").showAndWait();
         else {
@@ -95,20 +98,16 @@ public class PokerLoginController {
                 }
             if (!found) {
                 player = new Player(player.getUsername());
-                try {
-                    switchToSceneLobby();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                switchToSceneLobby();
             }
         }
     }
 
     /**
-     * Shows the statistics of all the registered users in a Dialog
+     * Shows the statistics of all the registered users in a Dialog.
      */
     @FXML
-    private void handleShowStatistics() {
+    void handleShowStatistics() {
         try {
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(getClass().getResource("poker-statistics-view.fxml"));
@@ -127,8 +126,11 @@ public class PokerLoginController {
         }
     }
 
+    /**
+     * Shows the info about the application.
+     */
     @FXML
-    private void handleAbout() {
+    void handleAbout() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Address Application");
         alert.setHeaderText("About");
@@ -136,30 +138,35 @@ public class PokerLoginController {
         alert.showAndWait();
     }
 
+    /**
+     * Exit the game.
+     */
     @FXML
-    private void handleExit() {
+    void handleExit() {
         System.exit(0);
     }
 
     /**
      * Switches the Scene from Login to the Lobby
-     *
-     * @throws IOException if there's no loader
      */
-    public void switchToSceneLobby() throws IOException {
-        FXMLLoader loader = new FXMLLoader();
-        loader.setLocation(getClass().getResource("poker-lobby-view.fxml"));
-        Parent root = loader.load();
+    public void switchToSceneLobby() {
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(getClass().getResource("poker-lobby-view.fxml"));
+            Parent root = loader.load();
 
-        //Set the player into the controller.
-        PokerLobbyController controller = loader.getController();
-        controller.setPlayer(player);
+            //Set the player into the controller.
+            PokerLobbyController controller = loader.getController();
+            controller.setPlayer(player);
 
-        //Create the stage.
-        Stage stage = (Stage) loginButton.getScene().getWindow();
-        Scene scene = new Scene(root);
-        stage.setScene(scene);
-        stage.show();
+            //Create the stage.
+            Stage stage = (Stage) loginButton.getScene().getWindow();
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
 

@@ -4,7 +4,7 @@ package com.pokergame;
  * A Poker Player with his username and balance.
  *
  * @author Alessandro Maini
- * @version 2023.6.21
+ * @version 2023.06.21
  */
 public class Player {
     String username;

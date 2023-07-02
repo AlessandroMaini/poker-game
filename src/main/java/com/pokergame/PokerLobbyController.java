@@ -16,6 +16,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Lobby view controller.
+ *
+ * @author Alessandro Maini
+ * @version 2023.06.28
+ */
 public class PokerLobbyController {
 
     @FXML
@@ -28,35 +34,47 @@ public class PokerLobbyController {
     private MenuBar menuBar;
     Player player;
 
+    /**
+     * Initialize the control class. This method is automatically called after the fxml file has been loaded.
+     */
     @FXML
     public void initialize() {
         balanceLabel.textProperty().addListener((observable, oldValue, newValue) -> player.setBalance(Long.parseLong(newValue)));
         usernameLabel.textProperty().addListener((observable, oldValue, newValue) -> player.setUsername(newValue));
     }
 
+    /**
+     * Switches the Scene from Lobby to Game and allows you to play a poker game at the table.
+     */
     @FXML
-    public void handlePlay() {
-        try {
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(getClass().getResource("poker-game-view.fxml"));
-            Parent root = loader.load();
+    void handlePlay() {
+        if (player.getBalance() > 0) {
+            try {
+                FXMLLoader loader = new FXMLLoader();
+                loader.setLocation(getClass().getResource("poker-game-view.fxml"));
+                Parent root = loader.load();
 
-            //Set the player into the controller.
-            PokerGameController controller = loader.getController();
-            controller.startGame(player);
+                //Set the player into the controller.
+                PokerGameController controller = loader.getController();
+                controller.startGame(player);
 
-            //Create the stage.
-            Stage stage = (Stage) menuBar.getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+                //Create the stage.
+                Stage stage = (Stage) menuBar.getScene().getWindow();
+                Scene scene = new Scene(root);
+                stage.setScene(scene);
+                stage.show();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else
+            new Alert(Alert.AlertType.ERROR, "You can't play with an empty account. Change the player.").showAndWait();
     }
 
+    /**
+     * Switches the Scene from Lobby to Login and allows you to select a different player.
+     */
     @FXML
-    public void handleChangePlayer() {
+    void handleChangePlayer() {
         try {
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(getClass().getResource("poker-login-view.fxml"));
@@ -72,8 +90,11 @@ public class PokerLobbyController {
         }
     }
 
+    /**
+     * Exit the game.
+     */
     @FXML
-    public void handleExit() {
+    void handleExit() {
         System.exit(0);
     }
 
@@ -95,11 +116,17 @@ public class PokerLobbyController {
     public void updatePlayerDatabase() {
         List<Player> players = PokerLoginController.getPlayerData();
         boolean found = false;
+        boolean exit = false;
+        int deleteIndex = 0;
         if (players != null)
             for (Player p : players) {
                 if (p.getUsername().equals(player.getUsername())) {
-                    p.setBalance(player.getBalance());
                     found = true;
+                    if (player.getBalance() <= 0) {
+                        deleteIndex = players.indexOf(p);
+                        exit = true;
+                    } else
+                        p.setBalance(player.getBalance());
                 }
             }
         if (!found) {
@@ -107,6 +134,8 @@ public class PokerLobbyController {
                 players = new ArrayList<>();
             players.add(player);
         }
+        if (exit)
+            players.remove(deleteIndex);
         try (FileWriter file = new FileWriter(PokerLoginController.PLAYER_DATABASE)) {
             ObjectMapper mapper = new ObjectMapper();
             mapper.registerModule(new JavaTimeModule());
