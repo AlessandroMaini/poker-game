@@ -16,9 +16,9 @@ Il database salverà informazioni riguardanti:
 Una volta entrati con il proprio utente si può selezionare uno dei tavoli ai quali giocare (i diversi tavoli hanno puntate diverse e giocatori bot con conti diversi, cioè c'è un tavolo nel quale la puntata minima è 10,
 un altro 50, poi 100, ecc.) -*questa feature la aggiungiamo più avanti*-.
 
-I giocatori bot al tavolo selezionato variano da 3 a 5 e il loro conto sarà compreso tra [conto utente - 50%, conto utente + 50%]
+I giocatori bot al tavolo selezionato **sono 3** e il loro conto sarà compreso tra [conto utente - 50%, conto utente + 50%]
 
-La routine di gioco è la seguente:
+<a name="routine">La routine di gioco è la seguente:</a>
 * Viene selezionato il dealer e di conseguenza piccolo e grande buio
 * Si distribuiscono le carte, da un mazzo mescolato di 52 carte (2 carte ad ogni giocatore)
 * Si esegue il primo giro di puntate, secondo le regole del **poker texas hold'em no limit**
@@ -39,8 +39,7 @@ Le azioni a disposizione del giocatore quando è il suo turno sono:
 
 (Per tutte le informazioni guardare la [pagina di wikipedia](#link))
 
-Quando un giocatore fa fold le sue carte non vnegono mai scoperte, se l'utente vuole abbandonare il tavolo ci sarà un bottone che se premuto gli consentirà di alzarsi dal tavolo prima della partita successiva (non è
-possibile abbandonare durante una partita).
+Quando un giocatore fa fold le sue carte non vengono mai scoperte, se l'utente vuole abbandonare il tavolo ci sarà un **toggle button** che se premuto gli consentirà di alzarsi dal tavolo prima della partita successiva (non è possibile abbandonare durante una partita).
 
 -*La parte più complicata sarà creare dei bot in grado di giocare in maniera un minimo realistica a poker, per fare ciò guarderò qualche guida online e ti farò sapere*-
 
@@ -66,6 +65,21 @@ A questo punto l'utente potrà decidere se rientrare in gioco oppure **uscire da
 
 Direi che questo è quanto Guido, aiuto il tempo è pochissimo e devo ancora iniziare [mannaggina](https://cpad.ask.fm/251/623/336/910003011-1qesacg-cl8jblr7cfbpr2f/original/tumblr_mkxmzykB2l1rdln34o1_500.jpg)
 
-Appena puoi scrivimi dicendo innanzitutto se la repository ti funziona, poi se c'è qualcosa che vuoi cambiare del progetto e infine quali parti preferisci fare (io farei la parte di interfacciamento con il **database**, poi vorrei anche fare lo script per i bot, comunque fammi sapere...)
+### UPDATE 2023.06.25
+Le seguenti parti del gioco sono state fatte (**non finite!**, si possono ancora perfezionare):
 
-CIAO!   :)
+* Login iniziale con annesso database dei giocatori in formato JSON (il database contine solo **username** e **conto**)
+* Lobby in cui il giocatore seleziona il tavolo per giocare (il tavolo è **uno solo**)
+* Turnazione base del gioco, ovvero i punti presentati [qui](#routine) -*Molto ma **MOLTO** più difficile di quanto possa sembrare, ma direi di avercela fatta*-
+* Grafiche delle carte, del background, del segnaposto del **dealer** e delle chips -*Decisamente migliorabili*-
+* Uscita dal tavolo e dal gioco con salvataggio dei dati della sessione
+
+Le seguenti parti del gioco sono ancora da fare:
+
+* Logica di gioco, ovvero:
+  * Metodo che calcola il valore di una mano
+  * Metodo che determina la migliore mano di un giocatore
+  * Determinazione del vincitore per ogni mano e assegnazione della vincita
+  * All-in & co. (side pot, ...)
+* Logica dei bot -*Bella tosta pure questa...*-
+* Mogliorie varie...

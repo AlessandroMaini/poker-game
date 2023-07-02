@@ -24,6 +24,9 @@ public class Card {
         this.suit = suit;
         this.value = value;
     }
+    public Card(Card card){
+        super();
+    }
 
     public int getSuit() {
         return suit;
