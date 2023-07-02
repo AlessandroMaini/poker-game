@@ -83,3 +83,16 @@ Le seguenti parti del gioco sono ancora da fare:
   * All-in & co. (side pot, ...)
 * Logica dei bot -*Bella tosta pure questa...*-
 * Mogliorie varie...
+
+### UPDATE 2023.07.02
+Le seguenti parti del gioco sono state [terminate](https://media.tenor.com/dR6vK_dQ1UgAAAAM/%C3%B3culos-escuro.gif):
+
+* Logica di gioco (sia valutazione delle mani, che determinazione mano migliore, vincitore e gestione di all in e side pots)
+* Rallentamento della turnazione con l'aggiunta di un **bottone** da premere per andare all'azione successiva
+* Migliorie varie, tra cui:
+  * Distinzione tra grafica e logica di gioco con l'aggiunta di un'apposita classe **GameLogic** per gestire quest'ultima
+  * Conseguente alleggerimento di **PokerGameController** -*Che aveva raggiunto più di 1000 righe*- che ora contiene sostanziamente solo metodi grafici
+
+Rimane da fare solo la **LOGICA DEI BOT** -*bel casino*-.
+
+Per il resto il gioco risulta completo e pronto all'uso -*dico a te Guido, nel caso tu voglia fare beta testing*-.
