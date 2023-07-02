@@ -38,11 +38,19 @@ public class Pot {
         this.amount += value;
     }
 
+    public void subAmount(long value) {
+        this.amount -= value;
+    }
+
     public long getPlayerAmount(int index) {
         return cumulativeBet.get(index);
     }
 
     public void addPlayerAmount(int index, long value) {
         cumulativeBet.set(index, cumulativeBet.get(index) + value);
+    }
+
+    public void subPlayerAmount(int index, long value) {
+        cumulativeBet.set(index, cumulativeBet.get(index) - value);
     }
 }

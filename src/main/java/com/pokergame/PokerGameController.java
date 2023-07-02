@@ -54,7 +54,7 @@ public class PokerGameController {
     public List<PlayerBet> bets;
     public CommunityCards communityCards;
     /** Dealer index in the players array */
-    public int dealer = -1;
+    public int dealer;
     /** Determine if is the user turn */
     public boolean userMove;
     /** Determine the current maximal raise */
@@ -128,6 +128,7 @@ public class PokerGameController {
     public void initialize() {
         firstGame = true;
         waitingForEnter = false;
+        dealer = -1;
         canvasListPlayers = Arrays.asList(canvasPlayer0, canvasPlayer1, canvasPlayer2, canvasPlayer3);
         canvasListDealer = Arrays.asList(canvasDealer0, canvasDealer1, canvasDealer2, canvasDealer3);
         canvasListChips = Arrays.asList(canvasBet0, canvasBet1, canvasBet2, canvasBet3);
@@ -845,7 +846,9 @@ public class PokerGameController {
             if (bets.get(i).getBet() > amount) {
                 sidePot = true;
                 sPot.addAmount(bets.get(i).getBet() - amount);
+                pot.subAmount(bets.get(i).getBet() - amount);
                 sPot.addPlayerAmount(i, bets.get(i).getBet() - amount);
+                pot.subPlayerAmount(i, bets.get(i).getBet() - amount);
                 bets.get(i).setBet(amount);
             }
         }
