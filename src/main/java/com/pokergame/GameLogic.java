@@ -285,6 +285,8 @@ public class GameLogic {
      * @return a string describing the action
      */
     public String botBet(int index) {
+        if (communityCards.isNotFlopShown())
+            return executeBotAction(BotPlayerLogic.preFlopBet(hands.get(index), bets, index, dealer, maxBet()), index);
         if (bets.get(index).getBet() < maxBet()) {
             if (randomGenerator.nextInt() % 2 == 0 || brokePlayer || players.get(index).getBalance() <= (maxBet() - bets.get(index).getBet()))
                 return call(bets.get(index), maxBet());
@@ -294,6 +296,16 @@ public class GameLogic {
                 return fold(bets.get(index));
         } else
             return check(bets.get(index));
+    }
+
+    public String executeBotAction(String action, int index) {
+        return switch (action) {
+            case "CALL" -> call(bets.get(index), maxBet());
+            case "RAISE" -> raise(bets.get(index), Math.max(maxRaise, BLIND));
+            case "FOLD" -> fold(bets.get(index));
+            case "ALL IN" -> allIn(bets.get(index));
+            default -> check(bets.get(index));
+        };
     }
 
     /**
