@@ -286,25 +286,19 @@ public class GameLogic {
      */
     public String botBet(int index) {
         if (communityCards.isNotFlopShown())
-            return executeBotAction(BotPlayerLogic.preFlopBet(hands.get(index), bets, index, dealer, maxBet()), index);
-        if (bets.get(index).getBet() < maxBet()) {
-            if (randomGenerator.nextInt() % 2 == 0 || brokePlayer || players.get(index).getBalance() <= (maxBet() - bets.get(index).getBet()))
-                return call(bets.get(index), maxBet());
-            else if (randomGenerator.nextInt() % 3 != 0)
-                return raise(bets.get(index), Math.max(maxRaise, BLIND));
-            else
-                return fold(bets.get(index));
-        } else
-            return check(bets.get(index));
+            return executeBotAction(BotPlayerLogic.preFlopBet(hands.get(index), bets, index, dealer, maxBet(), maxRaise), index);
+        else
+            return executeBotAction(BotPlayerLogic.flopTurnRiverBet(players.get(index), new Hand(getAllPlayerCards(hands.get(index))), bets, index, maxBet(), Math.max(maxRaise, BLIND), communityCards.getCommunityCards()), index);
     }
 
     public String executeBotAction(String action, int index) {
         return switch (action) {
+            case "CHECK" -> check(bets.get(index));
             case "CALL" -> call(bets.get(index), maxBet());
             case "RAISE" -> raise(bets.get(index), Math.max(maxRaise, BLIND));
             case "FOLD" -> fold(bets.get(index));
             case "ALL IN" -> allIn(bets.get(index));
-            default -> check(bets.get(index));
+            default -> raise(bets.get(index), Math.max(maxRaise, BLIND) * Integer.parseInt(action));
         };
     }
 

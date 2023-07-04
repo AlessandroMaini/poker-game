@@ -482,7 +482,7 @@ public class PokerGameController {
                 drawPlayerChips(game.getPlayerAt((game.getDealer() + 1) % GameLogic.NUM_PLAYERS));
                 drawPlayerChips(game.getPlayerAt((game.getDealer() + 2) % GameLogic.NUM_PLAYERS));
                 getPhaseText("-----NEW GAME STARTING-----");
-                drawPlayersHands(true);
+                drawPlayersHands(false);
                 nextBetIndex = (game.getDealer() + 3) % GameLogic.NUM_PLAYERS;
                 startNewGame = false;
                 waitingForNext = true;
@@ -568,9 +568,9 @@ public class PokerGameController {
      */
     void getActionText(String action, Player player, long amount) {
         String actionString;
-//        if (action.equals("FOLD"))
-//            drawPlayersHands(false);
-//        else
+        if (action.equals("FOLD"))
+            drawPlayersHands(false);
+        else
             drawPlayerChips(player);
         if (action.equals("RAISE"))
             actionString = String.format("%s %sS to %d", player.getUsername(), action, amount);
