@@ -98,6 +98,6 @@ Rimane da fare solo la **LOGICA DEI BOT** -*bel casino*-.
 Per il resto il gioco risulta completo e pronto all'uso -*dico a te Guido, nel caso tu voglia fare beta testing*-.
 
 ### UPDATE 2023.07.05
-[**Progetto terminato**](https://gfycat.com/gifs/search/hooray)!!
+[**Progetto terminato**](https://thumbs.gfycat.com/UnripeThoroughHalibut-max-1mb.gif)!!
 
 Adesso inizia la fase di **beta testing**. 
