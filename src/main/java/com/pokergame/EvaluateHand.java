@@ -82,7 +82,8 @@ public class EvaluateHand {
         //Value of straight to 5
         if (h[4].getValue() == 14 && h[0].getValue() == 2)
             val = h[4].getValue() + 14 * h[0].getValue() + 14 * 14 * h[1].getValue() + 14 * 14 * 14 * h[2].getValue() + 14 * 14 * 14 * 14 * h[3].getValue();
-        else val = valueHighCard(h);
+        else
+            val = valueHighCard(h);
         return STRAIGHT + val;
     }
 
