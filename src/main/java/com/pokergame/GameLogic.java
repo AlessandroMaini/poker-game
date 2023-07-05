@@ -14,24 +14,23 @@ import java.util.random.RandomGenerator;
  */
 public class GameLogic {
     /** Number of players at the table */
-    final public static int NUM_PLAYERS = 4;
+    public static final int NUM_PLAYERS = 4;
     /** Value of the blind, the minimal bet */
-    final public static long BLIND = 20L;
+    public static final long BLIND = 20L;
     Deck deck;
     Pot pot;
     List<Pot> sidePots;
     List<Player> players;
     List<PlayerHand> hands;
     List<PlayerBet> bets;
+    List<Boolean> bluffs;
     CommunityCards communityCards;
     /** Dealer index in the players list */
     int dealer;
-    /** Determine the current maximal raise */
+    /** Determine the current maximum raise */
     long maxRaise;
     /** Determine if is the big blind turn */
     boolean bigBlindAction;
-    /** Determine if there are side pots */
-    boolean sidePot;
     /** Determine if one player has a void balance */
     boolean brokePlayer;
     RandomGenerator randomGenerator = RandomGenerator.getDefault();
@@ -57,11 +56,11 @@ public class GameLogic {
         pot = new Pot(NUM_PLAYERS);
         sidePots = new ArrayList<>();
         communityCards = new CommunityCards();
-        sidePot = false;
         brokePlayer = false;
         bigBlindAction = false;
         maxRaise = 0L;
         if (replacePlayers()) {
+            setBluffs();
             setDealer();
             setBets();
             setBlinds();
@@ -201,9 +200,22 @@ public class GameLogic {
      */
     public Player generateBot(Player player) {
         Player p = new Player();
-        p.setBalance(randomGenerator.nextLong((long) (player.getBalance() - (player.getBalance() * 0.5)), (long) (player.getBalance() + (player.getBalance() * 0.5))));
+        p.setBalance(Math.max(randomGenerator.nextLong((long) (player.getBalance() - (player.getBalance() * 0.5)), (long) (player.getBalance() + (player.getBalance() * 0.5))), 1L));
         p.setUsername(String.format("Bot%d", randomGenerator.nextInt(1, 1000)));
         return p;
+    }
+
+    /**
+     * Sets a list of boolean to determine if each bot player should bluff or not.
+     */
+    public void setBluffs() {
+        bluffs = new ArrayList<>();
+        for (int i = 0; i < NUM_PLAYERS - 1; i++) {
+            if (randomGenerator.nextInt() % 15 == 0)
+                bluffs.add(true);
+            else
+                bluffs.add(false);
+        }
     }
 
     /**
@@ -232,8 +244,14 @@ public class GameLogic {
     public void setBlinds() {
         bets.get((dealer + 1) % NUM_PLAYERS).initializeBet();
         bets.get((dealer + 2) % NUM_PLAYERS).initializeBet();
-        playerBets(bets.get((dealer + 1) % NUM_PLAYERS), BLIND / 2);
-        playerBets(bets.get((dealer + 2) % NUM_PLAYERS), BLIND);
+        long bet = Math.min(BLIND / 2, players.get((dealer + 1) % NUM_PLAYERS).getBalance());
+        if (bet == players.get((dealer + 1) % NUM_PLAYERS).getBalance())
+            brokePlayer = true;
+        playerBets(bets.get((dealer + 1) % NUM_PLAYERS), bet);
+        bet = brokePlayer ? Math.min(bets.get((dealer + 1) % NUM_PLAYERS).getBet(), players.get((dealer + 2) % NUM_PLAYERS).getBalance()) : Math.min(BLIND, players.get((dealer + 2) % NUM_PLAYERS).getBalance());
+        if (bet == players.get((dealer + 2) % NUM_PLAYERS).getBalance())
+            brokePlayer = true;
+        playerBets(bets.get((dealer + 2) % NUM_PLAYERS), bet);
     }
 
     /**
@@ -285,15 +303,29 @@ public class GameLogic {
      * @return a string describing the action
      */
     public String botBet(int index) {
-        if (bets.get(index).getBet() < maxBet()) {
-            if (randomGenerator.nextInt() % 2 == 0 || brokePlayer || players.get(index).getBalance() <= (maxBet() - bets.get(index).getBet()))
-                return call(bets.get(index), maxBet());
-            else if (randomGenerator.nextInt() % 3 != 0)
-                return raise(bets.get(index), Math.max(maxRaise, BLIND));
-            else
-                return fold(bets.get(index));
-        } else
-            return check(bets.get(index));
+        if (communityCards.isNotFlopShown())
+            return executeBotAction(BotPlayerLogic.preFlopBet(hands.get(index), bets, index, dealer, maxBet(), maxRaise, bluffs, brokePlayer), index);
+        else
+            return executeBotAction(BotPlayerLogic.flopTurnRiverBet(players.get(index), new Hand(getAllPlayerCards(hands.get(index))), bets, index, maxBet(), Math.max(maxRaise, BLIND), communityCards, bluffs, brokePlayer), index);
+    }
+
+    /**
+     * Execute the bot action.
+     *
+     * @param action a string representing the action
+     * @param index the index of the bot in the players list
+     *
+     * @return a string representing the action
+     */
+    public String executeBotAction(String action, int index) {
+        return switch (action) {
+            case "CHECK" -> check(bets.get(index));
+            case "CALL" -> call(bets.get(index), maxBet());
+            case "RAISE" -> raise(bets.get(index), Math.max(maxRaise, BLIND));
+            case "FOLD" -> fold(bets.get(index));
+            case "ALL IN" -> allIn(bets.get(index));
+            default -> raise(bets.get(index), Math.max(maxRaise, BLIND) * Integer.parseInt(action));
+        };
     }
 
     /**
@@ -317,10 +349,8 @@ public class GameLogic {
      * @return a string describing the action
      */
     public String call(PlayerBet playerBet, long bet) {
-        if (bet == 0)
-            bet = BLIND;
-        if (playerBet.isBigBlind() && communityCards.isNotFlopShown() && bet == BLIND)
-            bet = 2 * BLIND;
+        if (bet == 0 || (playerBet.isBigBlind() && communityCards.isNotFlopShown() && bet == BLIND))
+            return raise(playerBet, BLIND);
         if ((bet -= playerBet.getBet()) >= playerBet.getPlayer().getBalance())
             return allIn(playerBet);
         else {
@@ -379,10 +409,11 @@ public class GameLogic {
      */
     public void handleSidePots(long amount) {
         brokePlayer = true;
+        boolean addSidePot = false;
         Pot sPot = new Pot(NUM_PLAYERS);
         for (int i = 0; i < NUM_PLAYERS; i++) {
             if (bets.get(i).getBet() > amount) {
-                sidePot = true;
+                addSidePot = true;
                 sPot.addAmount(bets.get(i).getBet() - amount);
                 pot.subAmount(bets.get(i).getBet() - amount);
                 sPot.addPlayerAmount(i, bets.get(i).getBet() - amount);
@@ -390,7 +421,7 @@ public class GameLogic {
                 bets.get(i).setBet(amount);
             }
         }
-        if (sidePot)
+        if (addSidePot)
             sidePots.add(sPot);
     }
 
@@ -431,15 +462,15 @@ public class GameLogic {
         if (count == 1)
             return true;
         //In the first round of bets the Big Blind can check, raise or fold.
-        if (communityCards.isNotFlopShown() && !bigBlindAction)
+        if (communityCards.isNotFlopShown() && !bigBlindAction && !brokePlayer)
             return false;
         return equals;
     }
 
     /**
-     * Determine the maximal bet in the current turn.
+     * Determine the maximum bet in the current turn.
      *
-     * @return the maximal bet
+     * @return the maximum bet
      */
     public long maxBet() {
         long max = 0;
@@ -474,12 +505,8 @@ public class GameLogic {
         return maxRaise;
     }
 
-    public boolean isSidePot() {
-        return sidePot;
-    }
-
-    public boolean isNotBrokePlayer() {
-        return !brokePlayer;
+    public boolean isBrokePlayer() {
+        return brokePlayer;
     }
 
     public Player getPlayerAt(int index) {

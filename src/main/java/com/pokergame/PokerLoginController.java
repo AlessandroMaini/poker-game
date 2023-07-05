@@ -134,7 +134,7 @@ public class PokerLoginController {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Address Application");
         alert.setHeaderText("About");
-        alert.setContentText("Authors: Alessandro Maini and Matteo Guidetti");
+        alert.setContentText("Author: Alessandro Maini");
         alert.showAndWait();
     }
 

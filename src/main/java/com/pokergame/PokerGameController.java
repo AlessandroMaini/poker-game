@@ -181,7 +181,7 @@ public class PokerGameController {
      */
     @FXML
     void handleRaise() {
-        if (userMove && game.isNotBrokePlayer() && game.getPlayerAt(0).getBalance() > (game.maxBet() - game.getBetAt(0).getBet())) {
+        if (userMove && !game.isBrokePlayer() && game.getPlayerAt(0).getBalance() > (game.maxBet() - game.getBetAt(0).getBet())) {
             try {
                 FXMLLoader loader = new FXMLLoader();
                 loader.setLocation(getClass().getResource("poker-raise-view.fxml"));
@@ -218,7 +218,7 @@ public class PokerGameController {
      */
     @FXML
     void handleAllIn() {
-        if (userMove && (game.isNotBrokePlayer() || game.getPlayerAt(0).getBalance() <= (game.maxBet() - game.getBetAt(0).getBet()))) {
+        if (userMove && (!game.isBrokePlayer() || game.getPlayerAt(0).getBalance() <= (game.maxBet() - game.getBetAt(0).getBet()))) {
             getActionText(game.allIn(game.getBetAt(0)), game.getPlayerAt(0), game.maxBet());
 
             userMove = false;
@@ -358,7 +358,7 @@ public class PokerGameController {
         graphicsContext.setFont(Font.font(14));
         graphicsContext.fillText(betString, 220, 10);
         // The number of different types of chips
-        final int CHIP_COLORS = 7;
+        final int CHIP_COLORS = 9;
         int[] chips = new int[CHIP_COLORS];
         Arrays.fill(chips, 0);
         getPlayerChips(game.getPot().getPlayerAmount(index), chips);
@@ -386,7 +386,7 @@ public class PokerGameController {
     }
 
     void getPlayerChips(long bet, int[] chips) {
-        long[] values = {10, 20, 40, 60, 100, 200, 1000};
+        long[] values = {1, 10, 20, 40, 60, 100, 200, 1000, 10000};
         for (int i = values.length - 1; i >= 0; i--) {
             while (bet - values[i] >= 0) {
                 bet -= values[i];
@@ -481,6 +481,9 @@ public class PokerGameController {
                 drawDealer();
                 drawPlayerChips(game.getPlayerAt((game.getDealer() + 1) % GameLogic.NUM_PLAYERS));
                 drawPlayerChips(game.getPlayerAt((game.getDealer() + 2) % GameLogic.NUM_PLAYERS));
+                //If one of the two players can't pay for the blind
+                if (game.isBrokePlayer())
+                    game.handleSidePots(game.getBetAt((game.getDealer() + 2) % GameLogic.NUM_PLAYERS).getBet());
                 getPhaseText("-----NEW GAME STARTING-----");
                 drawPlayersHands(false);
                 nextBetIndex = (game.getDealer() + 3) % GameLogic.NUM_PLAYERS;
@@ -498,10 +501,10 @@ public class PokerGameController {
      */
     public void bet(int index) {
         if (game.stopBetting()) {
-            if (game.isNotBrokePlayer())
+            if (!game.isBrokePlayer())
                 game.resetBets();
             waitingForNext = true;
-            nextBetIndex = (game.getDealer() + 3) % GameLogic.NUM_PLAYERS;
+            nextBetIndex = (game.getDealer() + 1) % GameLogic.NUM_PLAYERS;
             if (game.getCommunityCards().isNotFlopShown()) {
                 game.flop();
                 drawFlop();
@@ -542,10 +545,8 @@ public class PokerGameController {
             if (points.get(i) != 0)
                 getShowdownText(points.get(i), game.getPlayerAt(i));
         getPotWinnersText(points, game.getPot());
-        if (game.isSidePot()) {
-            for (Pot s : game.getSidePots())
-                getPotWinnersText(points, s);
-        }
+        for (Pot s : game.getSidePots())
+            getPotWinnersText(points, s);
     }
 
     /**
@@ -560,7 +561,7 @@ public class PokerGameController {
     }
 
     /**
-     * Generate the text describing the action.
+     * Generate the text describing the action, also updates the graphics in case of fold or bet.
      *
      * @param action the action of the player
      * @param player the player
