@@ -96,3 +96,8 @@ Le seguenti parti del gioco sono state [terminate](https://media.tenor.com/dR6vK
 Rimane da fare solo la **LOGICA DEI BOT** -*bel casino*-.
 
 Per il resto il gioco risulta completo e pronto all'uso -*dico a te Guido, nel caso tu voglia fare beta testing*-.
+
+### UPDATE 2023.07.05
+[**Progetto terminato**](https://gfycat.com/gifs/search/hooray)!!
+
+Adesso inizia la fase di **beta testing**. 
