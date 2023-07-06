@@ -32,27 +32,27 @@ import java.util.*;
  * @version 2023.07.02
  */
 public class PokerGameController {
-    /** Card images dimensions */
-    final public int CARD_HEIGHT = 145;
-    final public int CARD_WIDTH = 100;
     /** Path to the card images directory */
-    final public static String IMAGE_CARDS_DIRECTORY = "./src/main/resources/com/pokergame/cards";
+    public static final String IMAGE_CARDS_DIRECTORY = "./src/main/resources/com/pokergame/cards";
     /** Path to the dealer image */
-    final public String IMAGE_DEALER = "./src/main/resources/com/pokergame/dealer.png";
+    public static final String IMAGE_DEALER = "./src/main/resources/com/pokergame/dealer.png";
     /** Path to the chip images directory */
-    final public String IMAGE_CHIPS_DIRECTORY = "./src/main/resources/com/pokergame/chips";
+    public static final String IMAGE_CHIPS_DIRECTORY = "./src/main/resources/com/pokergame/chips";
+    /** Card images dimensions */
+    private final int CARD_HEIGHT = 145;
+    private final int CARD_WIDTH = 100;
     /** Determine if it is the first game at the table, to initialize the bot players */
-    public boolean firstGame;
+    private boolean firstGame;
     /** Determine if is the user turn */
-    public boolean userMove;
+    private boolean userMove;
     /** Determine if the game is waiting for the user to click on the next arrow */
-    public boolean waitingForNext;
+    private boolean waitingForNext;
     /** Index of the next player to bet */
-    public int nextBetIndex;
+    private int nextBetIndex;
     /** Determine if a new game have to start */
-    public boolean startNewGame;
+    private boolean startNewGame;
     /** Manages the running of the game */
-    public GameLogic game;
+    private GameLogic game;
     @FXML
     private Canvas canvasCommunity;
 
@@ -101,9 +101,9 @@ public class PokerGameController {
     @FXML
     private VBox textVBoxNarrator;
 
-    public List<Canvas> canvasListPlayers;
-    public List<Canvas> canvasListDealer;
-    public List<Canvas> canvasListChips;
+    private List<Canvas> canvasListPlayers;
+    private List<Canvas> canvasListDealer;
+    private List<Canvas> canvasListChips;
 
     /**
      * Initialize the control class. This method is automatically called after the fxml file has been loaded.
@@ -229,7 +229,7 @@ public class PokerGameController {
         }
     }
 
-    void setPlayersLabels() {
+    public void setPlayersLabels() {
         for (int i = 0; i < GameLogic.NUM_PLAYERS; ++i) {
             setPlayerLabel(i);
         }
@@ -240,7 +240,7 @@ public class PokerGameController {
      *
      * @param index the index of the player in the players list
      */
-    void setPlayerLabel(int index) {
+    public void setPlayerLabel(int index) {
         GraphicsContext graphicsContext = canvasListPlayers.get(index).getGraphicsContext2D();
         graphicsContext.setFill(Color.BLACK);
         graphicsContext.fillRect(0, 25, 220, 20);
@@ -253,7 +253,7 @@ public class PokerGameController {
     /**
      * Draws the players hand cards.
      */
-    void drawPlayersHands(boolean showdown) {
+    public void drawPlayersHands(boolean showdown) {
         for (int i = 0; i < GameLogic.NUM_PLAYERS; i++) {
             GraphicsContext graphicsContext = canvasListPlayers.get(i).getGraphicsContext2D();
             List<Card> hand = game.getHandAt(i).getCards();
@@ -271,7 +271,7 @@ public class PokerGameController {
      *
      * @return the card's image
      */
-    Image getImageCard(Card card, boolean show, boolean fold) {
+    public Image getImageCard(Card card, boolean show, boolean fold) {
         String path;
         if (fold)
             path = String.format("%s/back-fold.png", IMAGE_CARDS_DIRECTORY);
@@ -290,7 +290,7 @@ public class PokerGameController {
     /**
      * Draws the flop cards.
      */
-    void drawFlop() {
+    public void drawFlop() {
         GraphicsContext graphicsContext = canvasCommunity.getGraphicsContext2D();
         Image card1 = getImageCard(game.getCommunityCards().getCommunityCardAt(0), true, false);
         Image card2 = getImageCard(game.getCommunityCards().getCommunityCardAt(1), true, false);
@@ -305,7 +305,7 @@ public class PokerGameController {
     /**
      * Draws the turn card.
      */
-    void drawTurn() {
+    public void drawTurn() {
         GraphicsContext graphicsContext = canvasCommunity.getGraphicsContext2D();
         Image card = getImageCard(game.getCommunityCards().getCommunityCardAt(CommunityCards.TURN), true, false);
         graphicsContext.drawImage(card, 360, 0, CARD_WIDTH, CARD_HEIGHT);
@@ -317,7 +317,7 @@ public class PokerGameController {
     /**
      * Draws the river card.
      */
-    void drawRiver() {
+    public void drawRiver() {
         GraphicsContext graphicsContext = canvasCommunity.getGraphicsContext2D();
         Image card = getImageCard(game.getCommunityCards().getCommunityCardAt(CommunityCards.RIVER), true, false);
         graphicsContext.drawImage(card, 480, 0, CARD_WIDTH, CARD_HEIGHT);
@@ -329,7 +329,7 @@ public class PokerGameController {
     /**
      * Draws the dealer icon.
      */
-    void drawDealer() {
+    public void drawDealer() {
         for (int i = 0; i < GameLogic.NUM_PLAYERS; i++) {
             GraphicsContext graphicsContext = canvasListDealer.get(i).getGraphicsContext2D();
             if (i == game.getDealer()) {
@@ -348,7 +348,7 @@ public class PokerGameController {
      *
      * @param player the player whose bet you want to draw
      */
-    void drawPlayerChips(Player player) {
+    public void drawPlayerChips(Player player) {
         int index = game.getPlayers().indexOf(player);
         GraphicsContext graphicsContext = canvasListChips.get(index).getGraphicsContext2D();
         graphicsContext.clearRect(0, 0, 220, 120);
@@ -379,13 +379,13 @@ public class PokerGameController {
         }
     }
 
-    void drawSingleChip(GraphicsContext graphicsContext, Image image, int num) {
+    public void drawSingleChip(GraphicsContext graphicsContext, Image image, int num) {
         int y = ((num % 5) * 20) + 20;
         int x = 200 - (num / 5 * 20);
         graphicsContext.drawImage(image, x, y, 20, 20);
     }
 
-    void getPlayerChips(long bet, int[] chips) {
+    public void getPlayerChips(long bet, int[] chips) {
         long[] values = {1, 10, 20, 40, 60, 100, 200, 1000, 10000};
         for (int i = values.length - 1; i >= 0; i--) {
             while (bet - values[i] >= 0) {
@@ -398,7 +398,7 @@ public class PokerGameController {
     /**
      * Clears the chips shown on the screen.
      */
-    void clearChips() {
+    public void clearChips() {
         for (Canvas canvas : canvasListChips) {
             GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
             graphicsContext.clearRect(0, 0, 220, 120);
@@ -408,7 +408,7 @@ public class PokerGameController {
     /**
      * Writes on screen the options for the user.
      */
-    void setCanvasChoose() {
+    public void setCanvasChoose() {
         GraphicsContext graphicsContext = canvasChoose.getGraphicsContext2D();
         graphicsContext.setFill(Color.WHITE);
         graphicsContext.setFont(Font.font(14));
@@ -419,7 +419,7 @@ public class PokerGameController {
         graphicsContext.fillText("Choose your action:", 0, 30);
     }
 
-    void clearCanvasChoose() {
+    public void clearCanvasChoose() {
         GraphicsContext graphicsContext = canvasChoose.getGraphicsContext2D();
         graphicsContext.clearRect(0, 0, 217, 40);
     }
@@ -429,7 +429,7 @@ public class PokerGameController {
      *
      * @param text the text to add at the narrator
      */
-    void updateTextFlowNarrator(Text text) {
+    public void updateTextFlowNarrator(Text text) {
         if (textVBoxNarrator.getChildren().size() == 12)
             textVBoxNarrator.getChildren().remove(0);
         textVBoxNarrator.getChildren().add(text);
@@ -438,14 +438,14 @@ public class PokerGameController {
     /**
      * Creates a new community cards object and clears the community cards shown on the screen.
      */
-    void clearCommunityCanvas() {
+    public void clearCommunityCanvas() {
         canvasCommunity.getGraphicsContext2D().clearRect(0, 0, 580, CARD_HEIGHT);
     }
 
     /**
      * Writes on screen the best hand of the user.
      */
-    void setCanvasBestHand() {
+    public void setCanvasBestHand() {
         GraphicsContext graphicsContext = canvasChoose.getGraphicsContext2D();
         graphicsContext.setFill(Color.WHITE);
         graphicsContext.setFont(Font.font("System", FontWeight.BOLD, 14));
@@ -454,7 +454,7 @@ public class PokerGameController {
         graphicsContext.fillText(userBestHand, 0, 100);
     }
 
-    void clearCanvasBestHand() {
+    public void clearCanvasBestHand() {
         GraphicsContext graphicsContext = canvasChoose.getGraphicsContext2D();
         graphicsContext.clearRect(0, 40, 217, 120);
     }
@@ -526,7 +526,7 @@ public class PokerGameController {
                 setCanvasChoose();
                 userMove = true;
             } else {
-                getActionText(game.botBet(index), game.getPlayerAt(index), game.maxBet());
+                getActionText(game.botAction(index), game.getPlayerAt(index), game.maxBet());
                 setPlayerLabel(index);
                 waitingForNext = true;
                 nextBetIndex = (index + 1) % GameLogic.NUM_PLAYERS;
@@ -537,7 +537,7 @@ public class PokerGameController {
     /**
      * Shows the players hands, determines the score for each hand and decides the winners for each pot.
      */
-    void showdown() {
+    public void showdown() {
         getPhaseText("SHOWDOWN");
         List<Integer> points = game.getHandsScores();
         drawPlayersHands(true);
@@ -555,7 +555,7 @@ public class PokerGameController {
      * @param points list of players hand scores
      * @param pot the pot considered
      */
-    void getPotWinnersText(List<Integer> points, Pot pot) {
+    public void getPotWinnersText(List<Integer> points, Pot pot) {
         List<Player> winners = game.getPotWinners(points, pot);
         winners.forEach(winner -> getVictoryText(winner, pot, winners.size()));
     }
@@ -567,7 +567,7 @@ public class PokerGameController {
      * @param player the player
      * @param amount the optional amount of the raise, otherwise 0
      */
-    void getActionText(String action, Player player, long amount) {
+    public void getActionText(String action, Player player, long amount) {
         String actionString;
         if (action.equals("FOLD"))
             drawPlayersHands(false);
@@ -596,7 +596,7 @@ public class PokerGameController {
      *
      * @param phase the phase of the game
      */
-    void getPhaseText(String phase) {
+    public void getPhaseText(String phase) {
         Text phaseText = new Text(phase);
         phaseText.setFont(Font.font("System", FontWeight.BOLD, 14));
         phaseText.setFill(Color.BLACK);
@@ -609,7 +609,7 @@ public class PokerGameController {
      * @param points the score of the player's hand
      * @param p the player
      */
-    void getShowdownText(int points, Player p) {
+    public void getShowdownText(int points, Player p) {
         String showdownString;
         showdownString = String.format("%s has %s", p.getUsername(), getHandString(points));
         Text showdownText = new Text(showdownString);
@@ -618,7 +618,7 @@ public class PokerGameController {
         updateTextFlowNarrator(showdownText);
     }
 
-    String getHandString(int points) {
+    public String getHandString(int points) {
         return switch (points / 1000000) {
             case 1 -> "ONE PAIR";
             case 2 -> "TWO PAIRS";
@@ -639,7 +639,7 @@ public class PokerGameController {
      * @param pot the pot won by the player
      * @param numWinners the number of winners for the pot
      */
-    void getVictoryText(Player p, Pot pot, int numWinners) {
+    public void getVictoryText(Player p, Pot pot, int numWinners) {
         String victoryString;
         victoryString = String.format("%s WINS %d!!", p.getUsername(), (pot.getAmount() / numWinners));
         Text victoryText = new Text(victoryString);
@@ -651,7 +651,7 @@ public class PokerGameController {
     /**
      * Switches the Scene from Game to Lobby, if you decide to leave the table.
      */
-    void returnToLobby() {
+    public void returnToLobby() {
         try {
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(getClass().getResource("poker-lobby-view.fxml"));

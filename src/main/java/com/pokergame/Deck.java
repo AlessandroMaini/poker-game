@@ -11,7 +11,7 @@ import java.util.List;
  * @version 2023.6.23
  */
 public class Deck {
-    List<Card> cards;
+    private final List<Card> cards;
 
     /**
      * Initialize a new deck with all the 52 cards in order.

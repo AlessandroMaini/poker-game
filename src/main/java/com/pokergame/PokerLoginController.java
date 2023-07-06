@@ -23,13 +23,13 @@ import java.util.List;
  */
 public class PokerLoginController {
     /** Path to the players database */
-    final public static String PLAYER_DATABASE = "./src/main/resources/com/pokergame/players.json";
+    public static final String PLAYER_DATABASE = "./src/main/resources/com/pokergame/players.json";
     @FXML
     private TextField username;
     @FXML
     private Button loginButton;
 
-    Player player = new Player();
+    private Player player = new Player();
 
     /**
      * Initialize the control class. This method is automatically called after the fxml file has been loaded.
@@ -44,7 +44,7 @@ public class PokerLoginController {
      *
      * @return the list of Player objects
      */
-    static List<Player> getPlayerData() {
+    public static List<Player> getPlayerData() {
         try (FileReader file = new FileReader(PLAYER_DATABASE)) {
             ObjectMapper mapper = new ObjectMapper();
             mapper.registerModule(new JavaTimeModule());
@@ -65,7 +65,7 @@ public class PokerLoginController {
         List<Player> players = getPlayerData();
         if (players != null)
             for (Player p : players) {
-                if (p.username.equals(player.getUsername())) {
+                if (p.getUsername().equals(player.getUsername())) {
                     player = p;
                     found = true;
                     break;
@@ -90,7 +90,7 @@ public class PokerLoginController {
             List<Player> players = getPlayerData();
             if (players != null)
                 for (Player p : players) {
-                    if (p.username.equals(player.getUsername())) {
+                    if (p.getUsername().equals(player.getUsername())) {
                         new Alert(Alert.AlertType.ERROR, "This username is already taken").showAndWait();
                         found = true;
                         break;

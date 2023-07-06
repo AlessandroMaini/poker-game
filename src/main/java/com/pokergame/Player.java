@@ -7,8 +7,8 @@ package com.pokergame;
  * @version 2023.06.21
  */
 public class Player {
-    String username;
-    long balance;
+    private String username;
+    private long balance;
 
     /**
      * Initialize a new player.

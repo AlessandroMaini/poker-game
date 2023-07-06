@@ -11,13 +11,13 @@ import java.util.List;
  */
 public class CommunityCards {
     /** Index of the turn card */
-    final public static int TURN = 3;
+    public static final int TURN = 3;
     /** Index of the river card */
-    final public static int RIVER = 4;
-    public boolean flopShown;
-    public boolean turnShown;
-    public boolean riverShown;
-    List<Card> communityCards;
+    public static final int RIVER = 4;
+    private boolean flopShown;
+    private boolean turnShown;
+    private boolean riverShown;
+    private final List<Card> communityCards;
 
     /**
      * Initialize the community cards with an empty list.

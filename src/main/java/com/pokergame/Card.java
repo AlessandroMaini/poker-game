@@ -8,11 +8,11 @@ package com.pokergame;
  */
 public class Card {
     /** 0 = spades, 1 = hearts, 2 = clubs, 3 = diamonds */
-    int suit;
+    private final int suit;
     /** 2 = two, ..., 11 = jack, 12 = queen, 13 = king, 14 = ace */
-    int value;
-    String[] suitNames = {"spades", "hearts", "clubs", "diamonds"};
-    String[] valueNames = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "jack", "queen", "king", "ace"};
+    private final int value;
+    private final String[] suitNames = {"spades", "hearts", "clubs", "diamonds"};
+    private final String[] valueNames = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "jack", "queen", "king", "ace"};
 
     /**
      * Initialize a new card object.
@@ -23,9 +23,6 @@ public class Card {
     public Card(int suit, int value) {
         this.suit = suit;
         this.value = value;
-    }
-    public Card(Card card){
-        super();
     }
 
     public int getSuit() {

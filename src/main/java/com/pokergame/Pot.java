@@ -11,8 +11,8 @@ import java.util.List;
  * @version 2023.07.02
  */
 public class Pot {
-    public long amount;
-    public List<Long> cumulativeBet;
+    private long amount;
+    private final List<Long> cumulativeBet;
 
     /**
      * Initialize a new empty pot and an empty player's bets array.

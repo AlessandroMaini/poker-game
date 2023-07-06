@@ -13,7 +13,7 @@ public class PokerRaiseController {
 
     @FXML
     private Slider sliderRaise;
-    public double baseValue;
+    private double baseValue;
 
     /**
      * Initialize the control class. This method is automatically called after the fxml file has been loaded.

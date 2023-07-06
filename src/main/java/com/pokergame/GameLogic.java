@@ -17,23 +17,244 @@ public class GameLogic {
     public static final int NUM_PLAYERS = 4;
     /** Value of the blind, the minimal bet */
     public static final long BLIND = 20L;
-    Deck deck;
-    Pot pot;
-    List<Pot> sidePots;
-    List<Player> players;
-    List<PlayerHand> hands;
-    List<PlayerBet> bets;
-    List<Boolean> bluffs;
-    CommunityCards communityCards;
+    private Deck deck;
+    private Pot pot;
+    private List<Pot> sidePots;
+    private List<Player> players;
+    private List<PlayerHand> hands;
+    private List<PlayerBet> bets;
+    private List<Boolean> bluffs;
+    private CommunityCards communityCards;
     /** Dealer index in the players list */
-    int dealer;
+    private int dealer;
     /** Determine the current maximum raise */
-    long maxRaise;
+    private long maxRaise;
     /** Determine if is the big blind turn */
-    boolean bigBlindAction;
+    private boolean bigBlindAction;
     /** Determine if one player has a void balance */
-    boolean brokePlayer;
-    RandomGenerator randomGenerator = RandomGenerator.getDefault();
+    private boolean brokePlayer;
+    private final RandomGenerator randomGenerator = RandomGenerator.getDefault();
+
+    /**
+     * A utility inner class to decide the bot players actions.
+     *
+     * @author Alessandro Maini
+     * @version 2023.07.06
+     */
+    public class BotPlayerLogic {
+        public static final int BASE_SCORE = 420000;
+        private final int index;
+        private final Player botPlayer;
+        private final PlayerHand botHand;
+        private final PlayerBet botBet;
+
+        /**
+         * Initialize a new bot player.
+         *
+         * @param index the index of the bot player in the players list
+         */
+        public BotPlayerLogic(int index) {
+            this.index = index;
+            this.botPlayer = players.get(index);
+            this.botHand = hands.get(index);
+            this.botBet = bets.get(index);
+        }
+
+        /**
+         * Determine the bot action before the flop.
+         *
+         * @return a string describing the action of the bot
+         */
+        public String preFlopBet() {
+            if (bluffs.get(index - 1))
+                return raisePreFlop() ? raise(botBet, Math.max(maxRaise, BLIND)) : call(botBet, maxBet());
+            Card card1 = botHand.getCards().get(0);
+            Card card2 = botHand.getCards().get(1);
+            if (card1.getValue() < card2.getValue()) {
+                card1 = botHand.getCards().get(1);
+                card2 = botHand.getCards().get(0);
+            }
+            if (index == dealer)
+                return preFlopBetButton(card1, card2);
+            else if (index == (dealer + 3) % NUM_PLAYERS)
+                return preFlopBetLatePos(card1, card2);
+            else
+                return preFlopBetEarlyPos(card1, card2, index == (dealer + 2) % NUM_PLAYERS && maxBet() == BLIND);
+        }
+
+        /**
+         * Determine the bot action before the flop when the bot occupy the dealer's position.
+         *
+         * @param c1 the first card in the bots hand
+         * @param c2 the second card in the bots hand
+         *
+         * @return a string describing the action of the bot
+         */
+        public String preFlopBetButton(Card c1, Card c2) {
+            if (c1.getValue() == 14 || c1.getValue() == c2.getValue() || (c1.getSuit() == c2.getSuit() && (c1.getValue() == 13 || c1.getValue() > 9 && c2.getValue() > 7 || (c1.getValue() - c2.getValue() < 3 && c1.getValue() > 6) || c1.getValue() - c2.getValue() == 1)) || (c1.getSuit() != c2.getSuit() && c1.getValue() > 10 && c2.getValue() > 8)) {
+                if (botPlayer.getBalance() < maxBet() - botBet.getBet())
+                    return allIn(botBet);
+                else
+                    return raisePreFlop() ? raise(botBet, Math.max(maxRaise, BLIND)) : call(botBet, maxBet());
+            } else
+                return botFold(countFold()) ? fold(botBet) : call(botBet, maxBet());
+        }
+
+        /**
+         * Determine the bot action before the flop when the bot occupy a late position in the game.
+         *
+         * @param c1 the first card in the bots hand
+         * @param c2 the second card in the bots hand
+         *
+         * @return a string describing the action of the bot
+         */
+        public String preFlopBetLatePos(Card c1, Card c2) {
+            if (c1.getValue() == c2.getValue() || (c1.getSuit() == c2.getSuit() && (c1.getValue() == 14 || c1.getValue() == 13 && c2.getValue() > 8 || c1.getValue() > 10 && c2.getValue() > 9)) || (c1.getSuit() != c2.getSuit() && (c1.getValue() == 14 && c2.getValue() > 8 || c1.getValue() == 13 && c2.getValue() > 9 || c1.getValue() == 12 && c2.getValue() == 11))) {
+                if (botPlayer.getBalance() < maxBet() - botBet.getBet())
+                    return allIn(botBet);
+                else
+                    return raisePreFlop() ? raise(botBet, Math.max(maxRaise, BLIND)) : call(botBet, maxBet());
+            } else
+                return botFold(countFold()) ? fold(botBet) : call(botBet, maxBet());
+        }
+
+        /**
+         * Determine the bot action before the flop when the bot occupy an early position in the game.
+         *
+         * @param c1 the first card in the bots hand
+         * @param c2 the second card in the bots hand
+         * @param check determine if the bot can check
+         * *
+         *
+         * @return a string describing the action of the bot
+         */
+        public String preFlopBetEarlyPos(Card c1, Card c2, boolean check) {
+            if (c1.getValue() == c2.getValue() && c1.getValue() > 6 || (c1.getSuit() == c2.getSuit() && (c1.getValue() == 14 && c2.getValue() > 9 || c1.getValue() == 13 && c2.getValue() == 12)) || (c1.getSuit() != c2.getSuit() && c1.getValue() == 14 && c2.getValue() > 10)) {
+                if (botPlayer.getBalance() < maxBet() - botBet.getBet())
+                    return allIn(botBet);
+                else
+                    return raisePreFlop() ? raise(botBet, Math.max(maxRaise, BLIND)) : call(botBet, maxBet());
+            } else if (check && randomGenerator.nextInt() % 5 != 0) {
+                return check(botBet);
+            } else
+                return botFold(countFold()) ? fold(botBet) : call(botBet, maxBet());
+        }
+
+        /**
+         * Determine the bot action after the flop, the turn and the river.
+         *
+         * @return a string describing the action of the bot
+         */
+        public String flopTurnRiverBet() {
+            int scorePlayerHand;
+            Hand hand = new Hand(getAllPlayerCards(botHand));
+            if (bluffs.get(index - 1)) {
+                if (communityCards.isRiverShown())
+                    scorePlayerHand = randomGenerator.nextInt(4 * BASE_SCORE, 16 * BASE_SCORE);
+                else if (communityCards.isTurnShown())
+                    scorePlayerHand = randomGenerator.nextInt(2 * BASE_SCORE, 14 * BASE_SCORE);
+                else
+                    scorePlayerHand = randomGenerator.nextInt(BASE_SCORE, 11 * BASE_SCORE);
+            } else {
+                List<Card> tableCards = new ArrayList<>(communityCards.getCommunityCards());
+                if (tableCards.size() < 5)
+                    tableCards.add(new Card(5, 0));
+                if (tableCards.size() < 5)
+                    tableCards.add(new Card(5, -1));
+                //The net score of the bot hand is the score of his best hand minus the score of the community cards only
+                scorePlayerHand = hand.getBestHand() - EvaluateHand.valueHand(tableCards.toArray(new Card[5]));
+            }
+            if ((maxBet() - botBet.getBet()) * 100 / botPlayer.getBalance() < tolerance(scorePlayerHand))
+                return raiseOrCall(scorePlayerHand);
+            else
+                return foldOrCall(maxBet() == 0, countFold());
+        }
+
+        /**
+         * Determine the bet tolerance of the bot based on the score of his best hand.
+         *
+         * @param score the net score of the bot hand
+         *
+         * @return a tolerance percentage
+         */
+        public int tolerance(int score) {
+            score /= BASE_SCORE;
+            return switch (score) {
+                case 20, 19, 18, 17, 16, 15, 14 -> Integer.MAX_VALUE;
+                case 13, 12 -> 100;
+                case 11, 10, 9 -> 80;
+                case 8, 7 -> 60;
+                case 6, 5, 4 -> 40;
+                case 3, 2, 1 -> 20;
+                default -> 0;
+            };
+        }
+
+        /**
+         * Decide if the bot should raise before the flop.
+         *
+         * @return true if the bot should raise, otherwise false
+         */
+        public boolean raisePreFlop() {
+            if (brokePlayer)
+                return false;
+            return randomGenerator.nextInt() % (int) Math.pow(2, ((int) (maxRaise / GameLogic.BLIND) + 1)) == 0;
+        }
+
+        /**
+         * Decide if the bot should fold.
+         *
+         * @param numFold the number of players that folded
+         *
+         * @return true if the bot should fold, otherwise false
+         */
+        public boolean botFold(int numFold) {
+            return randomGenerator.nextInt() % (int) (Math.pow(2, numFold + 1) * (13 - (12.0 / (1.0 + Math.pow(Math.E, -(double) (6 * (maxBet() - botBet.getBet())) / (double) botPlayer.getBalance()))))) == 0;
+        }
+
+        /**
+         * Determine if the bot should fold or call or eventually check.
+         *
+         * @param check determine if the bot can check
+         * @param numFold the number of players that folded
+         *
+         * @return a string describing the action of the bot
+         */
+        public String foldOrCall(boolean check, int numFold) {
+            if (check && randomGenerator.nextInt() % 5 != 0) {
+                return check(botBet);
+            } else
+                return botFold(numFold) ? fold(botBet) : call(botBet, maxBet());
+        }
+
+        /**
+         * Determine if the bot should raise or call, in the first case determine also the amount to raise.
+         *
+         * @param score the net score of the bot hand
+         *
+         * @return a string describing the action of the bot
+         */
+        public String raiseOrCall(int score) {
+            if (brokePlayer)
+                return call(botBet, maxBet());
+            if (botPlayer.getBalance() < maxBet() - botBet.getBet())
+                return allIn(botBet);
+            for (int i = score / BASE_SCORE; i > 0; i--) {
+                if (randomGenerator.nextInt() % (int) Math.pow(2, (int) ((i * (double) Math.max(maxRaise, BLIND) / (double) botPlayer.getBalance()) * 4 + 1)) == 0)
+                    return raise(botBet, Math.max(maxRaise, BLIND) * i);
+            }
+            return call(botBet, maxBet());
+        }
+
+        /**
+         * Count the number of player that folded.
+         *
+         * @return the number of player that folded
+         */
+        public int countFold() {
+            return ((int) bets.stream().filter(PlayerBet::isFolded).count());
+        }
+    }
 
     /**
      * Initialize a new poker game.
@@ -261,7 +482,7 @@ public class GameLogic {
         hands = initializeHands();
         for (int i = 0; i < NUM_PLAYERS; i++) {
             List<Card> hand = List.of(deck.drawCard(), deck.drawCard());
-            hands.set((dealer + 1 + i) % NUM_PLAYERS, new PlayerHand(players.get((dealer + 1 + i) % NUM_PLAYERS), hand));
+            hands.set((dealer + 1 + i) % NUM_PLAYERS, new PlayerHand(hand));
         }
     }
 
@@ -302,30 +523,12 @@ public class GameLogic {
      *
      * @return a string describing the action
      */
-    public String botBet(int index) {
+    public String botAction(int index) {
+        BotPlayerLogic botPlayerLogic = new BotPlayerLogic(index);
         if (communityCards.isNotFlopShown())
-            return executeBotAction(BotPlayerLogic.preFlopBet(hands.get(index), bets, index, dealer, maxBet(), maxRaise, bluffs, brokePlayer), index);
+            return botPlayerLogic.preFlopBet();
         else
-            return executeBotAction(BotPlayerLogic.flopTurnRiverBet(players.get(index), new Hand(getAllPlayerCards(hands.get(index))), bets, index, maxBet(), Math.max(maxRaise, BLIND), communityCards, bluffs, brokePlayer), index);
-    }
-
-    /**
-     * Execute the bot action.
-     *
-     * @param action a string representing the action
-     * @param index the index of the bot in the players list
-     *
-     * @return a string representing the action
-     */
-    public String executeBotAction(String action, int index) {
-        return switch (action) {
-            case "CHECK" -> check(bets.get(index));
-            case "CALL" -> call(bets.get(index), maxBet());
-            case "RAISE" -> raise(bets.get(index), Math.max(maxRaise, BLIND));
-            case "FOLD" -> fold(bets.get(index));
-            case "ALL IN" -> allIn(bets.get(index));
-            default -> raise(bets.get(index), Math.max(maxRaise, BLIND) * Integer.parseInt(action));
-        };
+            return botPlayerLogic.flopTurnRiverBet();
     }
 
     /**

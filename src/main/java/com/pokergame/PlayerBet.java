@@ -8,10 +8,10 @@ package com.pokergame;
  * @version 2023.06.28
  */
 public class PlayerBet {
-    public Player player;
-    public long bet;
-    public boolean folded;
-    public boolean bigBlind;
+    private final Player player;
+    private long bet;
+    private boolean folded;
+    private final boolean bigBlind;
 
     /**
      * Initialize a new player turn bet.

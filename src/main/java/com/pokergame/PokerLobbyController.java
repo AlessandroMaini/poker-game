@@ -32,7 +32,7 @@ public class PokerLobbyController {
 
     @FXML
     private MenuBar menuBar;
-    Player player;
+    private Player player;
 
     /**
      * Initialize the control class. This method is automatically called after the fxml file has been loaded.

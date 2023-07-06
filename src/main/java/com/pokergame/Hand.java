@@ -10,9 +10,9 @@ import java.util.List;
  * @version 2023.07.02
  */
 public class Hand {
-    final public int NUM_HAND_CARDS = 5;
-    public List<Card> cards;
-    public int numCards;
+    private final int NUM_HAND_CARDS = 5;
+    private final List<Card> cards;
+    private final int numCards;
 
     /**
      * Initialize a new hand.
