@@ -14,6 +14,7 @@ import javafx.stage.Stage;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -116,17 +117,14 @@ public class PokerLobbyController {
     public void updatePlayerDatabase() {
         List<Player> players = PokerLoginController.getPlayerData();
         boolean found = false;
-        boolean exit = false;
-        int deleteIndex = 0;
         if (players != null)
-            for (Player p : players) {
+            for (Iterator<Player> iterator = players.iterator(); iterator.hasNext();) {
+                Player p = iterator.next();
                 if (p.getUsername().equals(player.getUsername())) {
                     found = true;
-                    if (player.getBalance() <= 0) {
-                        deleteIndex = players.indexOf(p);
-                        exit = true;
-                    } else
-                        p.setBalance(player.getBalance());
+                    if (player.getBalance() <= 0)
+                        iterator.remove();
+                    else p.setBalance(player.getBalance());
                 }
             }
         if (!found) {
@@ -134,8 +132,6 @@ public class PokerLobbyController {
                 players = new ArrayList<>();
             players.add(player);
         }
-        if (exit)
-            players.remove(deleteIndex);
         try (FileWriter file = new FileWriter(PokerLoginController.PLAYER_DATABASE)) {
             ObjectMapper mapper = new ObjectMapper();
             mapper.registerModule(new JavaTimeModule());
