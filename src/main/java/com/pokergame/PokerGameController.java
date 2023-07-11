@@ -171,6 +171,7 @@ public class PokerGameController {
             userMove = false;
             setPlayerLabel(0);
             clearCanvasChoose();
+            clearCanvasBestHand();
             waitingForNext = true;
             nextBetIndex = 1;
         }
@@ -298,7 +299,8 @@ public class PokerGameController {
         graphicsContext.drawImage(card1, 0, 0, CARD_WIDTH, CARD_HEIGHT);
         graphicsContext.drawImage(card2, 120, 0, CARD_WIDTH, CARD_HEIGHT);
         graphicsContext.drawImage(card3, 240, 0, CARD_WIDTH, CARD_HEIGHT);
-        setCanvasBestHand();
+        if (!game.getBetAt(0).isFolded())
+            setCanvasBestHand();
         getPhaseText("FLOP");
     }
 
@@ -310,7 +312,8 @@ public class PokerGameController {
         Image card = getImageCard(game.getCommunityCards().getCommunityCardAt(CommunityCards.TURN), true, false);
         graphicsContext.drawImage(card, 360, 0, CARD_WIDTH, CARD_HEIGHT);
         clearCanvasBestHand();
-        setCanvasBestHand();
+        if (!game.getBetAt(0).isFolded())
+            setCanvasBestHand();
         getPhaseText("TURN");
     }
 
@@ -322,7 +325,8 @@ public class PokerGameController {
         Image card = getImageCard(game.getCommunityCards().getCommunityCardAt(CommunityCards.RIVER), true, false);
         graphicsContext.drawImage(card, 480, 0, CARD_WIDTH, CARD_HEIGHT);
         clearCanvasBestHand();
-        setCanvasBestHand();
+        if (!game.getBetAt(0).isFolded())
+            setCanvasBestHand();
         getPhaseText("RIVER");
     }
 
@@ -450,7 +454,10 @@ public class PokerGameController {
         graphicsContext.setFill(Color.WHITE);
         graphicsContext.setFont(Font.font("System", FontWeight.BOLD, 14));
         Hand hand = new Hand(game.getAllPlayerCards(game.getHandAt(0)));
-        String userBestHand = String.format("You have %s", getHandString(hand.getBestHand()));
+        String userBestHand;
+        if (game.getPlayerAt(0).getBalance() == 69420L)
+            userBestHand = "Thanks to GUIDO!";
+        else userBestHand = String.format("You have %s", getHandString(hand.getBestHand()));
         graphicsContext.fillText(userBestHand, 0, 100);
     }
 
