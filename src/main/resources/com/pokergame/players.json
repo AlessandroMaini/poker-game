@@ -1,1 +1,7 @@
-[]
+[ {
+  "username" : "prove",
+  "balance" : 107760
+}, {
+  "username" : "test",
+  "balance" : 99500
+} ]
